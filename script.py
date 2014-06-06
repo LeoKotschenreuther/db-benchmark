@@ -42,14 +42,14 @@ print('Finished MySQL Benchmark')
 
 print('Starting postgresql (postgis) Benchmark')
 postgisDB = postgis.Postgis()
-postgisResults = postgisDB.runQueries(postgisqueries, numberOfExecutions)
+# postgisResults = postgisDB.runQueries(postgisqueries, numberOfExecutions)
 postgisDB.disconnect()
 print('Finished postgresql (postgis) Benchmark')
 
 
 print('Start printing results')
 # output.printMySQL(mySQLResults)
-output.printPostgis(postgisResults)
+# output.printPostgis(postgisResults)
 print('Finished printing results')
 
 
