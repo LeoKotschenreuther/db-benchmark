@@ -19,32 +19,32 @@ class Mysql:
 
 	def runQueries(self, queries, numberOfExecutions):
 		n = 0
-		results = {}
+		results = {'database': 'MySQL', 'queries': {}}
 		for query in queries:
-			results[query] = {'times': list(), 'avg': 0}
+			results['queries'][query] = {'times': list(), 'avg': 0}
 			for x in range(0, numberOfExecutions):
 				n = n + 1
 				self.cursor.execute(query)
 				if n % 15 == 0:
 					self.cursor.execute('SHOW PROFILES')
 					for row in self.cursor:
-						results[row[2]]['times'].append(row[1])
+						results['queries'][row[2]]['times'].append(1000 * row[1])	# Time in Milliseconds
 		if n % 15 != 0:
 			self.cursor.execute('SHOW PROFILES')
 			for x, row in enumerate(self.cursor):
 				if n < 15:
-					results[row[2]]['times'].append(row[1])
+					results['queries'][row[2]]['times'].append(1000 * row[1])		# Time in Milliseconds
 				elif x >= 15 - (n % 15):
-					results[row[2]]['times'].append(row[1])
+					results['queries'][row[2]]['times'].append(1000 * row[1])		# Time in Milliseconds
 
-		for query in results:
+		for query in results['queries']:
 			avg = 0
 			x = 0.0
-			for val in results[query]['times']:
+			for val in results['queries'][query]['times']:
 				avg = avg + val
 				x = x + 1
 
 			avg = avg / x
-			results[query]['avg'] = avg
+			results['queries'][query]['avg'] = avg
 
 		return results
