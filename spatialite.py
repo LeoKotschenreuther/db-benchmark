@@ -5,12 +5,13 @@ from pyspatialite import dbapi2 as db
 
 class Spatialite:
 
-	def __init__(self):
-		self.connection = self.connect()
+	def __init__(self, database):
+		self.db = database
+		self.connection = self.connect(database)
 		self.cursor = self.connection.cursor()
 
-	def connect(self):
-		return db.connect(':memory:')
+	def connect(self, database):
+		return db.connect(database)
 
 	def disconnect(self):
 		self.connection.close()
@@ -35,7 +36,7 @@ class Spatialite:
 		self.connection.commit()
 
 	def runQueries(self, queries, numberOfExecutions):
-		results = {'database': 'spatialite', 'queries': {}}
+		results = {'database': 'spatialite  - ' + self.db, 'queries': {}}
 		for query in queries:
 			results['queries'][query] = {'times': list(), 'avg': 0}
 			for x in range(0, numberOfExecutions):
