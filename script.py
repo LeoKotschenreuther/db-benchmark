@@ -4,7 +4,7 @@ import spatialite
 import output
 from threading import Thread
 
-numberOfExecutions = 1
+numberOfExecutions = 100
 mysqlqueries = [
 	"SELECT SQL_NO_CACHE COUNT(*) FROM test WHERE x > -0.98",
 	"SELECT SQL_NO_CACHE COUNT(*) FROM test WHERE X(point) > -0.98",
