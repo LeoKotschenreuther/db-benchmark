@@ -6,11 +6,10 @@ def printSingleResult(data):
 	f.write('Performance of ' + data['database'] + ':\n\n\n')
 	f.write('all times in milliseconds\n')
 	for query in data['queries']:
-		result = data['queries'][query]
-		f.write(query + '\n')
-		f.write('avg: ' + str(result['avg']) + '\n')
+		f.write(query['name'] + '\n')
+		f.write('avg: ' + str(query['avg']) + '\n')
 		f.write('values:\n')
-		for value in result['times']:
+		for value in query['times']:
 			f.write(str(value) + '\n')
 		f.write('\n')
 
@@ -26,9 +25,8 @@ def printSummary(datas):
 		f.write('Performance of ' + data['database'] + ':\n\n')
 		f.write('all times in milliseconds\n')
 		for query in data['queries']:
-			result = data['queries'][query]
-			f.write(query + '\n')
-			f.write('avg: ' + str(result['avg']) + '\n\n')
+			f.write(query['name'] + '\n')
+			f.write('avg: ' + str(query['avg']) + '\n\n')
 		f.write('\n')
 
 	f.close()

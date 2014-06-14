@@ -4,7 +4,7 @@ import spatialite
 import output
 from threading import Thread
 
-numberOfExecutions = 100
+numberOfExecutions = 1
 mysqlqueries = [
 	"SELECT SQL_NO_CACHE COUNT(*) FROM test WHERE x > -0.98",
 	"SELECT SQL_NO_CACHE COUNT(*) FROM test WHERE X(point) > -0.98",
@@ -92,26 +92,10 @@ def printResultsToFile():
 	output.printSummary(allResults)
 	print('Finished printing results')
 
-
-# t1 = Thread(target=runMySQL, args = ())
-# t2 = Thread(target=runPostgis, args = ())
-# t3 = Thread(target=runSpatialiteMain, args = ())
-# t4 = Thread(target=runSpatialiteDisk, args = ())
-
-# t1.start()
-# t2.start()
-# t3.start()
-# t4.start()
-
-# t1.join()
-# t2.join()
-# t3.join()
-# t4.join()
-
-runMySQL()
-runPostgis()
+# runMySQL()
+# runPostgis()
 runSpatialiteMain()
-runSpatialiteDisk()
+# runSpatialiteDisk()
 
 printResultsToFile()
 

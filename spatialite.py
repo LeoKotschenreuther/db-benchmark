@@ -36,23 +36,24 @@ class Spatialite:
 		self.connection.commit()
 
 	def runQueries(self, queries, numberOfExecutions):
-		results = {'database': 'spatialite  - ' + self.db, 'queries': {}}
+		results = {'database': 'spatialite  - ' + self.db, 'queries': list()}
 		for query in queries:
-			results['queries'][query] = {'times': list(), 'avg': 0}
+			queryObject = {'name': query, 'times': list(), 'avg': 0}
 			for x in range(0, numberOfExecutions):
 				startTime = time.clock()
 				self.cursor.execute(query)
 				executionTime = 1000 * (time.clock() - startTime) # milliseconds
-				results['queries'][query]['times'].append(executionTime)
+				queryObject['times'].append(executionTime)
+			results['queries'].append(queryObject)
 
 		for query in results['queries']:
 			avg = 0
 			x = 0.0
-			for val in results['queries'][query]['times']:
+			for val in query['times']:
 				avg = avg + val
 				x = x + 1
 
 			avg = avg / x
-			results['queries'][query]['avg'] = avg
+			query['avg'] = avg
 
 		return results

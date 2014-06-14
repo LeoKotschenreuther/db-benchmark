@@ -19,32 +19,40 @@ class Mysql:
 
 	def runQueries(self, queries, numberOfExecutions):
 		n = 0
-		results = {'database': 'MySQL', 'queries': {}}
+		results = {'database': 'MySQL', 'queries': list()}
 		for query in queries:
-			results['queries'][query] = {'times': list(), 'avg': 0}
+			results['queries'].append({'name': query, 'times': list(), 'avg': 0})
 			for x in range(0, numberOfExecutions):
 				n = n + 1
 				self.cursor.execute(query)
 				if n % 15 == 0:
 					self.cursor.execute('SHOW PROFILES')
 					for row in self.cursor:
-						results['queries'][row[2]]['times'].append(1000 * row[1])	# Time in Milliseconds
+						queryObject = {}
+						for x in results['queries']:
+							if x['name'] == row[2]:
+								queryObject = x
+								break
+						queryObject['times'].append(1000 * row[1])	# Time in Milliseconds
 		if n % 15 != 0:
 			self.cursor.execute('SHOW PROFILES')
 			for x, row in enumerate(self.cursor):
-				if n < 15:
-					results['queries'][row[2]]['times'].append(1000 * row[1])		# Time in Milliseconds
-				elif x >= 15 - (n % 15):
-					results['queries'][row[2]]['times'].append(1000 * row[1])		# Time in Milliseconds
+				if n < 15 or x >= 15 - (n % 15):
+					queryObject = {}
+					for x in results['queries']:
+						if x['name'] == row[2]:
+							queryObject = x
+							break
+					queryObject['times'].append(1000 * row[1])		# Time in Milliseconds
 
 		for query in results['queries']:
 			avg = 0
 			x = 0.0
-			for val in results['queries'][query]['times']:
+			for val in query['times']:
 				avg = avg + val
 				x = x + 1
 
 			avg = avg / x
-			results['queries'][query]['avg'] = avg
+			query['avg'] = avg
 
 		return results

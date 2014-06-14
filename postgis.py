@@ -14,9 +14,9 @@ class Postgis:
 		self.db.close()
 
 	def runQueries(self, queries, numberOfExecutions):
-		results = {'database': 'postgis', 'queries': {}}
+		results = {'database': 'postgis', 'queries': list()}
 		for query in queries:
-			results['queries'][query] = {'times': list(), 'avg': 0}
+			queryObject = {'name': query, 'times': list(), 'avg': 0}
 			for x in range(0, numberOfExecutions):
 				query_string = 'EXPLAIN ANALYZE ' + query
 				self.cursor.execute(query_string)
@@ -26,18 +26,19 @@ class Postgis:
 						# row looks like: "Total runtime: 123.456 ms"
 						# Remove the first 15 chars and the last 3 chars to get only the measured time
 						# Time is already in milliseconds
-						results['queries'][query]['times'].append(float(row[0][15:len(row[0]) - 3]))
+						queryObject['times'].append(float(row[0][15:len(row[0]) - 3]))
 
 					n = n + 1
+			results['queries'].append(queryObject)
 
 		for query in results['queries']:
 			avg = 0
 			x = 0.0
-			for val in results['queries'][query]['times']:
+			for val in query['times']:
 				avg = avg + val
 				x = x + 1
 
 			avg = avg / x
-			results['queries'][query]['avg'] = avg
+			query['avg'] = avg
 
 		return results
