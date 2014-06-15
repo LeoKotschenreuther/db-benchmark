@@ -1,6 +1,7 @@
 *.pyc
 *.db
 
+hanaCredentials.py
 data.csv
 test.py
 results

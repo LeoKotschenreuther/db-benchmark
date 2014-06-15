@@ -1,10 +1,10 @@
 import mysql
 import postgis
 import spatialite
+import hana
 import output
-from threading import Thread
 
-numberOfExecutions = 1
+numberOfExecutions = 100
 mysqlqueries = [
 	"SELECT SQL_NO_CACHE COUNT(*) FROM test WHERE x > -0.98",
 	"SELECT SQL_NO_CACHE COUNT(*) FROM test WHERE X(point) > -0.98",
@@ -17,7 +17,7 @@ mysqlqueries = [
 	# missing within_distance function
 	# missing within_distance function
 	# missing buffer function
-	]
+]
 
 postgisqueries = [
 	"SELECT COUNT(*) FROM test WHERE x > -0.98",
@@ -31,7 +31,7 @@ postgisqueries = [
 	"SELECT Count(*) FROM (SELECT * FROM test WHERE ST_Intersects(ST_GeomFromText('Polygon((0 0.2,0.2 0.2,0.2 0,0 0, 0 0.2))', 4326),point) = True ) subquery WHERE ST_DWithin(point, ST_GeomFromText('Point(0.1 0.1)',4326), 0.1) = True",
 	"SELECT Count(*) FROM (SELECT * FROM test WHERE X >= 0 AND X <= 0.2 AND Y >= 0 AND Y <= 0.2) as t WHERE ST_DWithin(t.point, ST_GeomFromText('Point(0.1 0.1)',4326), 0.1) = True",
 	"SELECT Count(*) FROM test WHERE ST_Contains(ST_Buffer(ST_GeomFromText('Point(0.1 0.1)', 4326), 0.1), point) = True"
-	]
+]
 
 spatialitequeries = [
 	"SELECT COUNT(*) FROM test WHERE x > -0.98",
@@ -45,9 +45,32 @@ spatialitequeries = [
 	"SELECT Count(*) FROM (SELECT * FROM test WHERE MBRIntersects(BuildMBR(0, 0.2, 0.2, 0),point) = 1 ) subquery WHERE Distance(point, MakePoint(0.1, 0.1, 4326)) <= 0.1",
 	"SELECT Count(*) FROM (SELECT * FROM test WHERE X >= 0 AND X <= 0.2 AND Y >= 0 AND Y <= 0.2) as t WHERE Distance(t.point, MakePoint(0.1, 0.1, 4326)) <= 0.1",
 	"SELECT Count(*) FROM test WHERE MBRContains(Buffer(MakePoint(0.1, 0.1, 4326), 0.1), point) = 1"
-	]
+]
+
+hanaqueries = [
+	"SELECT COUNT(*) FROM BENCHMARK.POINTS WHERE  X > -0.98",
+	"SELECT COUNT(*) FROM BENCHMARK.POINTS WHERE POINT.ST_X() > -0.98",
+	"SELECT Count(*) FROM BENCHMARK.POINTS WHERE X >= -0.8 AND X <= -0.6 AND Y >= 0.4 AND Y <= 0.7",
+	"SELECT COUNT(*) FROM (SELECT * FROM BENCHMARK.POINTS WHERE X >= -0.8 AND X <= -0.6 AND Y >= 0.4 AND Y <= 0.7) as t WHERE NEW ST_POLYGON('Polygon((-0.8 0.7, -0.6 0.7, -0.6 0.4, -0.8 0.4, -0.8 0.7))').ST_CONTAINS(t.POINT) = 1",
+	"SELECT COUNT(*) FROM BENCHMARK.POINTS WHERE POINT.ST_IntersectsRect(new ST_Point(-0.8, 0.7), new ST_Point(-0.6,0.4)) = 1",
+	"SELECT COUNT(*) FROM BENCHMARK.POINTS WHERE NEW ST_POLYGON('Polygon((-0.8 0.7, -0.6 0.7, -0.6 0.4, -0.8 0.4, -0.8 0.7))').ST_CONTAINS(POINT) = 1",
+	"SELECT COUNT(*) FROM BENCHMARK.POINTS WHERE (0.1-X)*(0.1-X) + (0.1-Y)*(0.1-Y) <= 0.1*0.1",
+	"SELECT COUNT(*) FROM (SELECT * FROM BENCHMARK.POINTS WHERE X >= 0 AND X <= 0.2 AND Y >= 0 AND Y <= 0.2) as t WHERE NEW ST_POINT(0.1, 0.1).ST_BUFFER(0.1).ST_CONTAINS(t.POINT) = 1",
+	"SELECT COUNT(*) FROM (SELECT * FROM BENCHMARK.POINTS WHERE POINT.ST_IntersectsRect(new ST_Point(0, 0.2), new ST_Point(0.2,0)) = 1 ) WHERE POINT.ST_WithinDistance(new ST_Point(0.1, 0.1), 0.1) = 1",
+	"SELECT COUNT(*) FROM (SELECT * FROM BENCHMARK.POINTS WHERE X >= 0 AND X <= 0.2 AND Y >= 0 AND Y <= 0.2) as t WHERE t.POINT.ST_WithinDistance(new ST_Point(0.1, 0.1), 0.1) = 1",
+	"SELECT COUNT(*) FROM BENCHMARK.POINTS WHERE NEW ST_POINT(0.1, 0.1).ST_BUFFER(0.1).ST_CONTAINS(POINT) = 1"
+]
 
 allResults = []
+
+def runHana():
+	print('Starting Hana Benchmark')
+	hanaDB = hana.Hana()
+	hanaResults = hanaDB.runQueries(hanaqueries, numberOfExecutions)
+	hanaDB.disconnect()
+	print('Finished Hana Benchmark')
+	output.printSingleResult(hanaResults)
+	allResults.append(hanaResults)
 
 def runMySQL():
 	print('Starting MySQL Benchmark')
@@ -92,10 +115,10 @@ def printResultsToFile():
 	output.printSummary(allResults)
 	print('Finished printing results')
 
+runHana()
 # runMySQL()
 # runPostgis()
-runSpatialiteMain()
-# runSpatialiteDisk()
+# runSpatialiteMain()
 
 printResultsToFile()
 

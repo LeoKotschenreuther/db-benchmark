@@ -1,6 +1,7 @@
 import sqlite3
 import csv
 import time
+import hana
 from pyspatialite import dbapi2 as db
 
 class Spatialite:
