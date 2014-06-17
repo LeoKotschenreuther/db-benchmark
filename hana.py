@@ -1,6 +1,7 @@
 import jaydebeapi
 import time
 import hanaCredentials
+# import dbapi
 
 class Hana:
 
@@ -9,8 +10,8 @@ class Hana:
         self.PASSWORD = hanaCredentials.pw()
         self.PORT = hanaCredentials.port()
         self.USER = hanaCredentials.user()
-        self.con = self.connect()
-        self.cursor = self.con.cursor()
+        # self.con = self.connect()
+        # self.cursor = self.con.cursor()
 
     def connect(self):
         url = 'jdbc:sap://%s:%s' %(self.HOST, self.PORT)
@@ -27,9 +28,17 @@ class Hana:
         for query in queries:
             queryObject = {'name': query, 'times': list(), 'avg': 0}
             for x in range(0, numberOfExecutions):
+                # print query
+                self.con = self.connect()
+                self.cursor = self.con.cursor()
                 startTime = time.clock()
-                result = self.cursor.execute(query)
+                self.cursor.execute(query)
+                result = self.cursor.fetchall()
                 executionTime = 1000 * (time.clock() - startTime) # milliseconds
+                self.disconnect()
+                print "Execution time:" + str(executionTime)
+                for row in result:
+                    print row[0]
                 queryObject['times'].append(executionTime)
 
             results['queries'].append(queryObject)
@@ -45,3 +54,10 @@ class Hana:
             query['avg'] = avg
 
         return results
+
+    def runTest(self):
+        query = "SELECT * FROM BENCHMARK.POINTS limit 10"
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        for r in result:
+            print r[0]
