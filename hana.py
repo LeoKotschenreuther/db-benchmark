@@ -1,7 +1,6 @@
 import jaydebeapi
-import time
 import hanaCredentials
-# import dbapi
+import re
 
 class Hana:
 
@@ -10,8 +9,8 @@ class Hana:
         self.PASSWORD = hanaCredentials.pw()
         self.PORT = hanaCredentials.port()
         self.USER = hanaCredentials.user()
-        # self.con = self.connect()
-        # self.cursor = self.con.cursor()
+        self.con = self.connect()
+        self.cursor = self.con.cursor()
 
     def connect(self):
         url = 'jdbc:sap://%s:%s' %(self.HOST, self.PORT)
@@ -20,38 +19,31 @@ class Hana:
             [url, self.USER, self.PASSWORD],
             'ngdbc.jar')
 
+
     def disconnect(self):
         self.con.close()
 
     def runQueries(self, queries, numberOfExecutions):
+        clearPlanCacheSQL = "ALTER SYSTEM CLEAR SQL PLAN CACHE"
+        self.cursor.execute(clearPlanCacheSQL)
         results = {'database': 'hana', 'queries': list()}
         for query in queries:
-            queryObject = {'name': query, 'times': list(), 'avg': 0}
+            queryObject = {'name': query, 'executions': 0, 'avg': 0}
             for x in range(0, numberOfExecutions):
-                # print query
-                self.con = self.connect()
-                self.cursor = self.con.cursor()
-                startTime = time.clock()
                 self.cursor.execute(query)
                 result = self.cursor.fetchall()
-                executionTime = 1000 * (time.clock() - startTime) # milliseconds
-                self.disconnect()
-                print "Execution time:" + str(executionTime)
-                for row in result:
-                    print row[0]
-                queryObject['times'].append(executionTime)
+
+            # exchange every ' in the query string with '' for escaping
+            preparedQuery = re.sub("'", "''", query)
+            getAvgTime = "SELECT EXECUTION_COUNT, AVG_EXECUTION_TIME FROM PUBLIC.M_SQL_PLAN_CACHE WHERE STATEMENT_STRING LIKE '" + preparedQuery + "'"
+            self.cursor.execute(getAvgTime)
+            avgTimeResult = self.cursor.fetchall()
+            for row in avgTimeResult:
+                # print int(str(row[1]))
+                queryObject['avg'] = float(int(str(row[1]))/1000)
+                queryObject['executions'] = row[0]
 
             results['queries'].append(queryObject)
-
-        for query in results['queries']:
-            avg = 0
-            x = 0.0
-            for val in query['times']:
-                avg = avg + val
-                x = x + 1
-
-            avg = avg / x
-            query['avg'] = avg
 
         return results
 

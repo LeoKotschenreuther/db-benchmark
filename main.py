@@ -3,9 +3,8 @@ import postgis
 import spatialite
 import hana
 import output
-import time
 
-numberOfExecutions = 1
+numberOfExecutions = 100
 
 # As mysql doesn't support Buttor or Distance functions, we can only measure seven instead of eleven queries
 mysqlqueries = [
@@ -66,8 +65,7 @@ def runHana():
 	print('Starting Hana Benchmark')
 	hanaDB = hana.Hana()
 	hanaResults = hanaDB.runQueries(hanaqueries, numberOfExecutions)
-	# hanaDB.runTest()
-	# hanaDB.disconnect()
+	hanaDB.disconnect()
 	print('Finished Hana Benchmark')
 	output.printSingleResult(hanaResults)
 	allResults.append(hanaResults)
@@ -100,15 +98,6 @@ def runSpatialiteMain():
 	output.printSingleResult(spatialiteResultsMain)
 	allResults.append(spatialiteResultsMain)
 
-def runSpatialiteDisk():
-	print('Starting spatialite Benchmark - disk')
-	spatialiteDB = spatialite.Spatialite('benchmark.db')
-	# spatialiteDB.setUpDB()
-	spatialiteResultsDisk = spatialiteDB.runQueries(spatialitequeries, numberOfExecutions)
-	spatialiteDB.disconnect()
-	print('Finished spatialite Benchmark - disk')
-	output.printSingleResult(spatialiteResultsDisk)
-	allResults.append(spatialiteResultsDisk)
 
 def runSoccerAnalyticsWorkload():
 	runHana()
@@ -126,15 +115,8 @@ def printResultsToFile():
 	output.printSummary(allResults)
 	print('Finished printing results')
 
-# runSoccerAnalyticsWorkload()
-starttime = time.clock()
 runHana()
-endtime = time.clock()
-difference = endtime - starttime
-print "starttime: " + str(starttime)
-print "endtime: " + str(endtime)
-print "allTime: " + str(difference)
 
-# printResultsToFile()
+printResultsToFile()
 
 

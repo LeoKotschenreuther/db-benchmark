@@ -8,9 +8,13 @@ def printSingleResult(data):
 	for query in data['queries']:
 		f.write(query['name'] + '\n')
 		f.write('avg: ' + str(query['avg']) + '\n')
-		f.write('values:\n')
-		for value in query['times']:
-			f.write(str(value) + '\n')
+		if query.has_key('time'):
+			f.write('values:\n')
+			for value in query['times']:
+				f.write(str(value) + '\n')
+		elif query.has_key('executions'):
+			f.write('Number of executions: ' + str(query['executions']) + '\n')
+
 		f.write('\n')
 
 	f.close()
