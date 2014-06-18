@@ -8,7 +8,7 @@ def printSingleResult(data):
 	for query in data['queries']:
 		f.write(query['name'] + '\n')
 		f.write('avg: ' + str(query['avg']) + '\n')
-		if query.has_key('time'):
+		if query.has_key('times'):
 			f.write('values:\n')
 			for value in query['times']:
 				f.write(str(value) + '\n')

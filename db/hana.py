@@ -47,6 +47,24 @@ class Hana:
 
         return results
 
+    def checkIntersection(self, polygons):
+        query = "SELECT NEW ST_POLYGON('Polygon(("
+        for point in polygons[0]:
+            query += str(point['x']) + " " + str(point['y']) + ","
+        query += str(polygons[0][0]['x']) + " " + str(polygons[0][0]['y']) + "))')"
+        query += ".ST_INTERSECTS(NEW ST_POLYGON('Polygon(("
+        for polygon in polygons[1]:
+            query += str(polygon['x']) + " " + str(polygon['y']) + ","
+        query += str(polygons[1][0]['x']) + " " + str(polygons[1][0]['y']) + "))')) FROM dummy"
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+        flag = False
+        for row in result:
+            if result[0] == 1 : flag = True
+            elif result[0] == 0 : flag = False
+
+        return flag
+
     def runTest(self):
         query = "SELECT * FROM BENCHMARK.POINTS limit 10"
         self.cursor.execute(query)
