@@ -1,9 +1,8 @@
 def host():
-	# return '172.16.19.226'
-	return '192.168.30.35'
+	return '172.16.19.226'
         
 def pw():
-	return 'FussB4ll'
+	return 'manager'
         
 def port():
 	# return 31415
