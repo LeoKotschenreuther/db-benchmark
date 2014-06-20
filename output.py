@@ -27,6 +27,8 @@ def printSummary(datas):
 
 	for data in datas:
 		f.write('Performance of ' + data['database'] + ':\n\n')
+		if data.has_key('polygonSize'):
+			f.write('PolygonSize: ' + str(data['polygonSize']) + '\n')
 		f.write('all times in milliseconds\n')
 		for query in data['queries']:
 			f.write(query['name'] + '\n')

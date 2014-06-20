@@ -6,38 +6,51 @@ import random
 import math
 
 numberOfExecutions = 100
-polygonSize = 5000
+polygonSizes = [
+	10,
+	20,
+	50,
+	100,
+	200,
+	500,
+	1000,
+	2000
+]
+# polygonSize = 3000
 results = list()
 areaLength = 100
 
-# def runHana():
-# 	print('Starting Hana Benchmark')
-# 	hanaDB = hana.Hana()
-# 	hanaResults = hanaDB.runQueries(hanaqueries(), numberOfExecutions)
-# 	hanaDB.disconnect()
-# 	print('Finished Hana Benchmark')
-# 	output.printSingleResult(hanaResults)
-# 	return hanaResults!
+def runHana(polygonSize, polygons, areaPoints):
+	print('Starting Hana Benchmark')
+	hanaDB = hana.Hana()
+	hanaDB.insertPolygons(polygons)
+	print('\tInserted the polygons into a table')
+	areaString = hanaDB.polygonString(areaPoints)
+	hanaResults = hanaDB.runQueriesPoly(nineIntersection.hanaqueries(areaString), numberOfExecutions, polygonSize)
+	hanaDB.disconnect()
+	print('Finished Hana Benchmark')
+	output.printSingleResult(hanaResults)
+	return hanaResults
 
-def runPostgis(polygons, areaPoints):
+def runPostgis(polygonSize, polygons, areaPoints):
 	print('Started postgis Benchmark')
 	postgisDB = postgis.Postgis()
 	postgisDB.insertPolygons(polygons)
 	print('\tInserted the polygons into a table')
 	areaString = postgisDB.polygonString(areaPoints)
-	postgisResults = postgisDB.runQueries(nineIntersection.postgisqueries(areaString), numberOfExecutions)
+	postgisResults = postgisDB.runQueriesPoly(nineIntersection.postgisqueries(areaString), numberOfExecutions, polygonSize)
 	postgisDB.disconnect()
 	print('Finished postgis Benchmark')
 	output.printSingleResult(postgisResults)
 	return postgisResults
 
-def runSpatialiteMain():
+def runSpatialiteMain(polygonSize, polygons, areaPoints):
 	print('Started spatialite Benchmark')
-	spatialiteDB = spatialite.Spatialite()
+	spatialiteDB = spatialite.Spatialite(':memory:')
 	spatialiteDB.insertPolygons(polygons)
 	print('\tInserted the polygons into a table')
 	areaString = spatialiteDB.polygonString(areaPoints)
-	spatialiteResults = postgisDB.runQueries(nineIntersection.postgisqueries(areaString), numberOfExecutions)
+	spatialiteResults = spatialiteDB.runQueriesPoly(nineIntersection.spatialitequeries(areaString), numberOfExecutions, polygonSize)
 	spatialiteDB.disconnect()
 	print('Finished postgis Benchmark')
 	output.printSingleResult(spatialiteResults)
@@ -64,54 +77,65 @@ def createPolygon(numPoints, midX, midY, areaLength):
 	return points
 
 def runSoccerAnalyticsWorkload():
-	results.append(soccerAnalytics.runHana(numberOfExecutions))
+	# results.append(soccerAnalytics.runHana(numberOfExecutions))
 	# results.append(soccerAnalytics.runMySQL(numberOfExecutions))
 	# results.append(soccerAnalytics.runPostgis(numberOfExecutions))
-	# results.append(soccerAnalytics.runSpatialiteMain(numberOfExecutions))
+	results.append(soccerAnalytics.runSpatialiteMain(numberOfExecutions))
 
 def run9IntersectionWorkload():
-	polygonIsValid = False
-	polygonsIntersect = False
-	polygons = list()
-	polygon1 = list()
-	while not polygonIsValid:
-		polygon1 = createPolygon(polygonSize, -1, -1, areaLength)
-		# check whether they intersect:
-		# hanaDB = hana.Hana()
-		# polygonsNotValid = hanaDB.checkIntersection(polygons)
-		# hanaDB.disconnect()
-		postgisDB = postgis.Postgis()
-		polygonIsValid = postgisDB.isPolygonValid(polygon1)
-		postgisDB.disconnect()
+	for polygonSize in polygonSizes:
+		polygonIsValid = False
+		polygonsIntersect = False
+		polygons = list()
+		polygon1 = list()
+		while not polygonIsValid:
+			polygon1 = createPolygon(polygonSize, -1, -1, areaLength)
+			# check whether they intersect:
+			# hanaDB = hana.Hana()
+			# polygonIsValid = hanaDB.isPolygonValid(polygon1)
+			# hanaDB.disconnect()
+			# postgisDB = postgis.Postgis()
+			# polygonIsValid = postgisDB.isPolygonValid(polygon1)
+			# postgisDB.disconnect()
+			spatialiteDB = spatialite.Spatialite(':memory:')
+			polygonIsValid = spatialiteDB.isPolygonValid(polygon1)
+			spatialiteDB.disconnect()
 
-	polygons.append(polygon1)
-	polygon2 = list()
-	polygonIsValid = False
-	while not polygonIsValid and not polygonsIntersect:
-		polygon2 = createPolygon(polygonSize, 1, 1, areaLength)
-		postgisDB = postgis.Postgis()
-		polygonIsValid = postgisDB.isPolygonValid(polygon2)
-		polygonsIntersect = postgisDB.checkIntersection([polygon1, polygon2])
-		postgisDB.disconnect()
+		polygons.append(polygon1)
+		polygon2 = list()
+		polygonIsValid = False
+		while not polygonIsValid and not polygonsIntersect:
+			polygon2 = createPolygon(polygonSize, 1, 1, areaLength)
+			# postgisDB = postgis.Postgis()
+			# polygonIsValid = postgisDB.isPolygonValid(polygon2)
+			# polygonsIntersect = postgisDB.checkIntersection([polygon1, polygon2])
+			# postgisDB.disconnect()
+			# hanaDB = hana.Hana()
+			# polygonsNotValid = hanaDB.isPolygonValid(polygon2)
+			# polygonsIntersect = hanaDB.checkIntersection([polygon1, polygon2])
+			# hanaDB.disconnect()
+			spatialiteDB = spatialite.Spatialite(':memory:')
+			polygonsNotValid = spatialiteDB.isPolygonValid(polygon2)
+			polygonsIntersect = spatialiteDB.checkIntersection([polygon1, polygon2])
+			spatialiteDB.disconnect()
 
-	polygons.append(polygon2)
+		polygons.append(polygon2)
 
-	# print(polygons)
+		# print(polygons)
 
-	print("Created two valid polygons")
-	areaPoints = list()
-	areaPoints.append({'x': -areaLength, 'y': areaLength})
-	areaPoints.append({'x': areaLength, 'y': areaLength})
-	areaPoints.append({'x': areaLength, 'y': -areaLength})
-	areaPoints.append({'x': -areaLength, 'y': -areaLength})
-	areaPoints.append({'x': -areaLength, 'y': areaLength})
+		print("Created two valid polygons")
+		areaPoints = list()
+		areaPoints.append({'x': -areaLength, 'y': areaLength})
+		areaPoints.append({'x': areaLength, 'y': areaLength})
+		areaPoints.append({'x': areaLength, 'y': -areaLength})
+		areaPoints.append({'x': -areaLength, 'y': -areaLength})
 
-	# Create table in each db, insert polygons and measure results
-	# MySQL has no Intersectino function, so we can't test the nine intersection model
-	results.append(runPostgis(polygons, areaPoints))
-	# the following do not work yet
-	# runSpatialite()
-	# runHana()
+		# Create table in each db, insert polygons and measure results
+		# MySQL has no Intersectino function, so we can't test the nine intersection model
+		results.append(runPostgis(polygonSize, polygons, areaPoints))
+		results.append(runHana(polygonSize, polygons, areaPoints))
+		results.append(runSpatialiteMain(polygonSize, polygons, areaPoints))
+	
 
 
 	# Check relations
@@ -121,8 +145,8 @@ def printResultsToFile():
 	output.printSummary(results)
 	print('Finished printing results')
 
-runSoccerAnalyticsWorkload()
-# run9IntersectionWorkload()
+# runSoccerAnalyticsWorkload()
+run9IntersectionWorkload()
 
 printResultsToFile()
 

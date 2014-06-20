@@ -43,6 +43,21 @@ class Postgis:
 			self.cursor.execute(insert)
 		print("\tInserted Polygons into polygons table")
 
+	def checkIntersection(self, polygons):
+		query = "SELECT ST_Intersects(" + self.polygonString(polygons[0]) + ", " + self.polygonString(polygons[1]) + ")"
+		self.cursor.execute(query)
+		rows = self.cursor.fetchall()
+		flag = False
+		for row in rows:
+			flag = row[0]
+		return flag
+
+	def runQueriesPoly(self, queries, numberOfExecutions, polygonSize):
+		print '\tPolygonsize: ' + str(polygonSize)
+		results = self.runQueries(queries, numberOfExecutions)
+		results['polygonSize'] = polygonSize
+		return results
+
 	def runQueries(self, queries, numberOfExecutions):
 		results = {'database': 'postgis', 'queries': list()}
 		allQueries = len(queries) * numberOfExecutions
@@ -70,23 +85,14 @@ class Postgis:
 
 			results['queries'].append(queryObject)
 
-		# for query in results['queries']:
-		# 	avg = 0
-		# 	x = 0.0
-		# 	for val in query['times']:
-		# 		avg = avg + val
-		# 		x = x + 1
+		for query in results['queries']:
+			avg = 0
+			x = 0.0
+			for val in query['times']:
+				avg = avg + val
+				x = x + 1
 
-		# 	avg = avg / x
-		# 	query['avg'] = avg
+			avg = avg / x
+			query['avg'] = avg
 
 		return results
-
-	def checkIntersection(self, polygons):
-		query = "SELECT ST_Intersects(" + self.polygonString(polygons[0]) + ", " + self.polygonString(polygons[1]) + ")"
-		self.cursor.execute(query)
-		rows = self.cursor.fetchall()
-		flag = False
-		for row in rows:
-			flag = row[0]
-		return flag

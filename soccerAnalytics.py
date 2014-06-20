@@ -28,6 +28,7 @@ def postgisqueries():
 		# "SELECT Count(*) FROM test WHERE ST_Contains(ST_Buffer(ST_GeomFromText('Point(0.1 0.1)', 4326), 0.1), point) = True"
 	]
 
+# without index
 def spatialitequeries():
 	return [
 		"SELECT COUNT(*) FROM test WHERE x > -0.98",
@@ -42,6 +43,22 @@ def spatialitequeries():
 		"SELECT Count(*) FROM (SELECT * FROM test WHERE X > 0 AND X < 0.2 AND Y > 0 AND Y < 0.2) as t WHERE Distance(t.point, MakePoint(0.1, 0.1, 4326)) < 0.1",
 		"SELECT Count(*) FROM test WHERE MBRContains(Buffer(MakePoint(0.1, 0.1, 4326), 0.1), point) = 1"
 	]
+
+# with index
+# def spatialitequeries():
+# 	return [
+# 		"SELECT COUNT(*) FROM test WHERE x > -0.98",
+# 		"SELECT COUNT(pkid) FROM idx_test_point WHERE XMIN > -0.98",
+# 		"SELECT COUNT(*) FROM test WHERE x > -0.8 AND x < -0.6 AND y > 0.4 AND y< 0.7",
+# 		"SELECT COUNT(pkid) FROM (SELECT * FROM test where x > -0.8 AND x < -0.6 AND y > 0.4 AND y < 0.7) as t WHERE MBRContains(BuildMBR(-0.8, 0.7, -0.6, 0.4), t.point) = 1",
+# 		"SELECT COUNT(*) FROM idx_test_point WHERE MBRIntersects(point, BuildMBR(-0.8, 0.7, -0.6, 0.4)) = 1",
+# 		"SELECT COUNT(*) FROM idx_test_point WHERE MBRContains(BuildMBR(-0.8, 0.7, -0.6, 0.4), point) = 1",
+# 		"SELECT COUNT(*) FROM idx_test_point WHERE (0.1-x)*(0.1-x)+(0.1-y)*(0.1-y) < 0.1*0.1",
+# 		"SELECT COUNT(*) FROM (SELECT * FROM idx_test_point WHERE X > 0 AND X < 0.2 AND Y > 0 AND Y < 0.2) as t WHERE MBRContains(Buffer(MakePoint(0.1, 0.1, 4326), 0.1), t.point) = 1",
+# 		"SELECT Count(*) FROM (SELECT * FROM idx_test_point WHERE MBRIntersects(BuildMBR(0, 0.2, 0.2, 0),point) = 1 ) subquery WHERE Distance(point, MakePoint(0.1, 0.1, 4326)) < 0.1",
+# 		"SELECT Count(*) FROM (SELECT * FROM idx_test_point WHERE X > 0 AND X < 0.2 AND Y > 0 AND Y < 0.2) as t WHERE Distance(t.point, MakePoint(0.1, 0.1, 4326)) < 0.1",
+# 		"SELECT Count(*) FROM idx_test_point WHERE MBRContains(Buffer(MakePoint(0.1, 0.1, 4326), 0.1), point) = 1"
+# 	]
 
 def hanaqueries():
 	return [
@@ -100,9 +117,11 @@ def runPostgis(numberOfExecutions):
 	return postgisResults
 
 def runSpatialiteMain(numberOfExecutions):
+	enableIndex = True
 	print('Starting spatialite Benchmark - main-memory')
-	spatialiteDBMain = spatialite.Spatialite(':memory:')
-	spatialiteDBMain.setUpDB()
+	# spatialiteDBMain = spatialite.Spatialite(':memory:')
+	spatialiteDBMain = spatialite.Spatialite('benchmark.db')
+	# spatialiteDBMain.setUpDB(enableIndex)
 	spatialiteResultsMain = spatialiteDBMain.runQueries(spatialitequeries(), numberOfExecutions)
 	spatialiteDBMain.disconnect()
 	print('Finished spatialite Benchmark - main-memory')
