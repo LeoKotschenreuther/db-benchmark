@@ -36,3 +36,17 @@ def printSummary(datas):
 		f.write('\n')
 
 	f.close()
+
+def printSoccerSummary(datas):
+	f = open('results/SoccerSummary'+time.strftime("%Y-%m-%d")+'-'+time.strftime("%H:%M:%S")+'.txt', 'w')
+
+	f.write('Summary of all soccer measurements:\n\n\n')
+
+	for data in datas:
+		f.write('Performance of ' + data['database'] + ':\n')
+		f.write('all times in milliseconds\n')
+		for query in data['queries']:
+			f.write(query['name'] + '\t' + str(query['avg']) + '\n')
+		f.write('\n')
+
+	f.close()

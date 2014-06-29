@@ -8,16 +8,9 @@ import math
 numberOfExecutions = 100
 polygonSizes = [
 	10,
-	20,
-	50,
-	100,
-	200,
-	500,
-	1000,
 	2000
 ]
 # polygonSize = 3000
-results = list()
 areaLength = 100
 
 def runHana(polygonSize, polygons, areaPoints):
@@ -77,10 +70,12 @@ def createPolygon(numPoints, midX, midY, areaLength):
 	return points
 
 def runSoccerAnalyticsWorkload():
-	# results.append(soccerAnalytics.runHana(numberOfExecutions))
+	results = list()
+	results.append(soccerAnalytics.runHana(numberOfExecutions))
 	# results.append(soccerAnalytics.runMySQL(numberOfExecutions))
 	# results.append(soccerAnalytics.runPostgis(numberOfExecutions))
-	results.append(soccerAnalytics.runSpatialiteMain(numberOfExecutions))
+	# results.append(soccerAnalytics.runSpatialiteMain(numberOfExecutions))
+	output.printSoccerSummary(results)
 
 def run9IntersectionWorkload():
 	for polygonSize in polygonSizes:
@@ -145,8 +140,6 @@ def printResultsToFile():
 	output.printSummary(results)
 	print('Finished printing results')
 
-# runSoccerAnalyticsWorkload()
-run9IntersectionWorkload()
 
-printResultsToFile()
-
+runSoccerAnalyticsWorkload()
+# run9IntersectionWorkload()

@@ -1,7 +1,8 @@
 import jaydebeapi
+import xml.etree.ElementTree as ET
 import hanaCredentials
-import re
 import math
+import time
 
 class Hana:
 
@@ -72,33 +73,52 @@ class Hana:
         return results
 
     def runQueries(self, queries, numberOfExecutions):
-        clearPlanCacheSQL = "ALTER SYSTEM CLEAR SQL PLAN CACHE"
-        self.cursor.execute(clearPlanCacheSQL)
         results = {'database': 'hana', 'queries': list()}
         allQueries = len(queries) * numberOfExecutions
         n = 0
         for query in queries:
-            queryObject = {'name': query, 'executions': 0, 'avg': 0}
+            queryObject = {'name': query, 'times': list(), 'avg': 0}
             for x in range(0, numberOfExecutions):
-                self.cursor.execute(query)
-                result = self.cursor.fetchall()
+                self.get_planviz_data(query, 'hana')
+                n = n + 1
+                if n % (math.floor(allQueries/10.0)) == 0:
+                    print('\tFinished: ' + str(n * 100.0 / allQueries) + '%')
 
-            # exchange every ' in the query string with '' for escaping
-            preparedQuery = re.sub("'", "''", query)
-            getAvgTime = "SELECT EXECUTION_COUNT, AVG_EXECUTION_TIME FROM PUBLIC.M_SQL_PLAN_CACHE WHERE STATEMENT_STRING LIKE '" + preparedQuery + "'"
-            self.cursor.execute(getAvgTime)
-            avgTimeResult = self.cursor.fetchall()
-            for row in avgTimeResult:
-                # print int(str(row[1]))
-                queryObject['avg'] = float(int(str(row[1]))/1000)
-                queryObject['executions'] = row[0]
+                tree = ET.parse("./results/hana/hana.xml") #xml output vom planviz_call
+                queryObject['times'].append(float(tree.find(".//{http://www.sap.com/ndb/planviz}RootRelation//{http://www.sap.com/ndb/planviz}ExecutionTime//{http://www.sap.com/ndb/planviz}Inclusive").text)/1000)
 
             results['queries'].append(queryObject)
-            n = n + 1
-            if n % (math.ceil(allQueries/10.0)) == 0:
-                print('\tFinished: ' + str(n * 100.0 / allQueries) + '%')
 
+        for query in results['queries']:
+            avg = 0
+            x = 0.0
+            for val in query['times']:
+                avg = avg + val
+                x = x + 1
+
+            avg = avg / x
+            query['avg'] = avg
         return results
+
+    def get_planviz_data(self, query, resultname):
+        self.cursor.execute(''' {CALL PLANVIZ_ACTION(?,?)} ''', (103, None)) #enable planviz mode
+        self.cursor.execute(''' {CALL PLANVIZ_ACTION(?,?)} ''', (201, query)) #get query id
+        queryid = u''''''
+        for row in self.cursor.fetchall():
+            queryid =  unicode(row[0])
+        # cursor.execute(''' {CALL PLANVIZ_ACTION(?,?)} ''', (304, queryid)) # get optimizer plan
+        # with open("planviz_data/range_test/304/"+resultname+".xml", "w") as xmlout:
+        #     for row in cursor.fetchall():
+        #         xmlout.write(row[0])
+        string = "EXECUTE PLANVIZ STATEMENT ID '" + str(queryid) +"'" # exceute the query
+        with open("execution_time_range_test.csv", "a") as out:
+            start = time.time()
+            self.cursor.execute(string)
+            out.write(str(time.time()-start)+'\t' + resultname + '\n')
+        self.cursor.execute(''' {CALL PLANVIZ_ACTION(?,?)} ''', (401, queryid)) # get plan after execution
+        with open("results/hana/"+ resultname+".xml", "w") as xmlout:
+            for row in self.cursor.fetchall():
+                xmlout.write(row[0])
 
     def runTest(self):
         query = "SELECT * FROM BENCHMARK.POINTS limit 10"

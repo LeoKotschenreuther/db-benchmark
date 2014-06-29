@@ -35,4 +35,4 @@ def spatialitequeries(exteriorString):
 		"SELECT Intersection(one.polygon, Difference(" + exteriorString + ", two.polygon)) FROM (SELECT * FROM POLYGONS WHERE ID=0) one, (SELECT * FROM POLYGONS WHERE ID=1) two",
 		"SELECT Intersection(Boundary(one.polygon), Difference(" + exteriorString + ", two.polygon)) FROM (SELECT * FROM POLYGONS WHERE ID=0) one, (SELECT * FROM POLYGONS WHERE ID=1) two",
 		"SELECT Intersection(Difference(" + exteriorString + ", one.polygon), Difference(" + exteriorString + ", two.polygon)) FROM (SELECT * FROM POLYGONS WHERE ID=0) one, (SELECT * FROM POLYGONS WHERE ID=1) two"
-		]		
+		]
