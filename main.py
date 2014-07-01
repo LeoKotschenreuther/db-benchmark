@@ -16,10 +16,10 @@ areaLength = 100
 def runHana(polygonSize, polygons, areaPoints):
 	print('Starting Hana Benchmark')
 	hanaDB = hana.Hana()
-	hanaDB.insertPolygons(polygons)
+	hanaDB.insertPolygons(polygons, polygonSize)
 	print('\tInserted the polygons into a table')
 	areaString = hanaDB.polygonString(areaPoints)
-	hanaResults = hanaDB.runQueriesPoly(nineIntersection.hanaqueries(areaString), numberOfExecutions, polygonSize)
+	hanaResults = hanaDB.runQueriesPoly(nineIntersection.hanaqueries(areaString, polygonSize), numberOfExecutions, polygonSize)
 	hanaDB.disconnect()
 	print('Finished Hana Benchmark')
 	output.printSingleResult(hanaResults)
@@ -28,10 +28,10 @@ def runHana(polygonSize, polygons, areaPoints):
 def runPostgis(polygonSize, polygons, areaPoints):
 	print('Started postgis Benchmark')
 	postgisDB = postgis.Postgis()
-	postgisDB.insertPolygons(polygons)
+	postgisDB.insertPolygons(polygons, polygonSize)
 	print('\tInserted the polygons into a table')
 	areaString = postgisDB.polygonString(areaPoints)
-	postgisResults = postgisDB.runQueriesPoly(nineIntersection.postgisqueries(areaString), numberOfExecutions, polygonSize)
+	postgisResults = postgisDB.runQueriesPoly(nineIntersection.postgisqueries(areaString, polygonSize), numberOfExecutions, polygonSize)
 	postgisDB.disconnect()
 	print('Finished postgis Benchmark')
 	output.printSingleResult(postgisResults)
@@ -78,6 +78,13 @@ def runSoccerAnalyticsWorkload():
 	output.printSoccerSummary(results)
 
 def run9IntersectionWorkload():
+	results = list()
+	hanaDB = hana.Hana()
+	hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	hanaDB.disconnect()
+	postgisDB = postgis.Postgis()
+	postgisDB.dropCreateTable('POLYGONS')
+	postgisDB.disconnect()
 	for polygonSize in polygonSizes:
 		polygonIsValid = False
 		polygonsIntersect = False
@@ -86,15 +93,15 @@ def run9IntersectionWorkload():
 		while not polygonIsValid:
 			polygon1 = createPolygon(polygonSize, -1, -1, areaLength)
 			# check whether they intersect:
-			# hanaDB = hana.Hana()
-			# polygonIsValid = hanaDB.isPolygonValid(polygon1)
-			# hanaDB.disconnect()
+			hanaDB = hana.Hana()
+			polygonIsValid = hanaDB.isPolygonValid(polygon1)
+			hanaDB.disconnect()
 			# postgisDB = postgis.Postgis()
 			# polygonIsValid = postgisDB.isPolygonValid(polygon1)
 			# postgisDB.disconnect()
-			spatialiteDB = spatialite.Spatialite(':memory:')
-			polygonIsValid = spatialiteDB.isPolygonValid(polygon1)
-			spatialiteDB.disconnect()
+			# spatialiteDB = spatialite.Spatialite(':memory:')
+			# polygonIsValid = spatialiteDB.isPolygonValid(polygon1)
+			# spatialiteDB.disconnect()
 
 		polygons.append(polygon1)
 		polygon2 = list()
@@ -105,14 +112,14 @@ def run9IntersectionWorkload():
 			# polygonIsValid = postgisDB.isPolygonValid(polygon2)
 			# polygonsIntersect = postgisDB.checkIntersection([polygon1, polygon2])
 			# postgisDB.disconnect()
-			# hanaDB = hana.Hana()
-			# polygonsNotValid = hanaDB.isPolygonValid(polygon2)
-			# polygonsIntersect = hanaDB.checkIntersection([polygon1, polygon2])
-			# hanaDB.disconnect()
-			spatialiteDB = spatialite.Spatialite(':memory:')
-			polygonsNotValid = spatialiteDB.isPolygonValid(polygon2)
-			polygonsIntersect = spatialiteDB.checkIntersection([polygon1, polygon2])
-			spatialiteDB.disconnect()
+			hanaDB = hana.Hana()
+			polygonsNotValid = hanaDB.isPolygonValid(polygon2)
+			polygonsIntersect = hanaDB.checkIntersection([polygon1, polygon2])
+			hanaDB.disconnect()
+			# spatialiteDB = spatialite.Spatialite(':memory:')
+			# polygonsNotValid = spatialiteDB.isPolygonValid(polygon2)
+			# polygonsIntersect = spatialiteDB.checkIntersection([polygon1, polygon2])
+			# spatialiteDB.disconnect()
 
 		polygons.append(polygon2)
 
@@ -131,9 +138,7 @@ def run9IntersectionWorkload():
 		results.append(runHana(polygonSize, polygons, areaPoints))
 		results.append(runSpatialiteMain(polygonSize, polygons, areaPoints))
 	
-
-
-	# Check relations
+	output.print9ISummary(results)
 
 def printResultsToFile():
 	print('Start printing results')
@@ -141,5 +146,5 @@ def printResultsToFile():
 	print('Finished printing results')
 
 
-runSoccerAnalyticsWorkload()
-# run9IntersectionWorkload()
+# runSoccerAnalyticsWorkload()
+run9IntersectionWorkload()

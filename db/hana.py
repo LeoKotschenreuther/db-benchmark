@@ -51,18 +51,20 @@ class Hana:
             elif row[0] == 0 : flag = False
         return flag
 
-    def insertPolygons(self, polygons):
+    def dropCreateTable(self, table):
         try:
-            dropPolygons = "DROP TABLE BENCHMARK.POLYGONS"
+            dropPolygons = "DROP TABLE " + table
             self.cursor.execute(dropPolygons)
-            print("\tDropped Table Polygons")
+            print("\tDropped Table")
         except:
-            print("\tCould not drop table polygons as it doesn't exist")
-        createPolygonTable = "CREATE COLUMN TABLE BENCHMARK.POLYGONS (ID INTEGER, POLYGON ST_GEOMETRY)"
+            print("\tCould not drop table as it doesn't exist")
+        createPolygonTable = "CREATE COLUMN TABLE " + table + " (ID INTEGER, SIZE INTEGER, POLYGON ST_GEOMETRY)"
         self.cursor.execute(createPolygonTable)
-        print("\tCreated Table Polygons")
+        print("\tCreated Table")
+
+    def insertPolygons(self, polygons, polygonSize):
         for i, polygon in enumerate(polygons):
-            insert = "INSERT INTO BENCHMARK.POLYGONS (ID, polygon) VALUES (" + str(i) + ", " + self.polygonString(polygon) + ")"
+            insert = "INSERT INTO BENCHMARK.POLYGONS (ID, SIZE, polygon) VALUES (" + str(i) + ", " + str(polygonSize) + ", " + self.polygonString(polygon) + ")"
             self.cursor.execute(insert)
         print("\tInserted Polygons into polygons table")
 
@@ -81,7 +83,7 @@ class Hana:
             for x in range(0, numberOfExecutions):
                 self.get_planviz_data(query, 'hana')
                 n = n + 1
-                if n % (math.floor(allQueries/10.0)) == 0:
+                if n % (math.ceil(allQueries/10.0)) == 0:
                     print('\tFinished: ' + str(n * 100.0 / allQueries) + '%')
 
                 tree = ET.parse("./results/hana/hana.xml") #xml output vom planviz_call

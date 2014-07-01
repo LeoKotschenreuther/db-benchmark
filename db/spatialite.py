@@ -101,9 +101,9 @@ class Spatialite:
 		for query in queries:
 			queryObject = {'name': query, 'times': list(), 'avg': 0}
 			for x in range(0, numberOfExecutions):
-				startTime = time.clock()
+				startTime = time.time()
 				self.cursor.execute(query)
-				executionTime = 1000 * (time.clock() - startTime) # milliseconds
+				executionTime = 1000 * (time.time() - startTime) # milliseconds
 				queryObject['times'].append(executionTime)
 				n = n + 1
 				if n % (math.ceil(allQueries/10.0)) == 0:

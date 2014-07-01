@@ -31,16 +31,20 @@ class Postgis:
 			isValid = row[0]
 		return isValid
 
-	def insertPolygons(self, polygons):
-		dropPolygons = "DROP TABLE IF EXISTS polygons"
+	def dropCreateTable(self, table):
+		dropPolygons = "DROP TABLE IF EXISTS " + table
 		self.cursor.execute(dropPolygons)
-		print("\tDropped Table Polygons")
-		createPolygonTable = "CREATE TABLE POLYGONS (ID integer, polygon geometry(POLYGON, 4326))"
+		print("\tDropped Table")
+		createPolygonTable = "CREATE TABLE " + table + " (ID integer, size integer, polygon geometry(POLYGON, 4326))"
 		self.cursor.execute(createPolygonTable)
-		print("\tCreated Table Polygons")
+		self.connection.commit()
+		print("\tCreated Table")
+
+	def insertPolygons(self, polygons, polygonSize):
 		for i, polygon in enumerate(polygons):
-			insert = "INSERT INTO POLYGONS (ID, polygon) VALUES (" + str(i) + ", " + self.polygonString(polygon) + ")"
+			insert = "INSERT INTO POLYGONS (ID, SIZE, polygon) VALUES (" + str(i) + ", " + str(polygonSize) + ", " + self.polygonString(polygon) + ")"
 			self.cursor.execute(insert)
+			self.connection.commit()
 		print("\tInserted Polygons into polygons table")
 
 	def checkIntersection(self, polygons):
