@@ -1,5 +1,6 @@
 import psycopg2
 import math
+import time
 
 class Postgis:
 
@@ -100,3 +101,30 @@ class Postgis:
 			query['avg'] = avg
 
 		return results
+
+	def test(self):
+		dropTable = "DROP TABLE IF EXISTS testSelect"
+		self.cursor.execute(dropTable)
+		createTable = "CREATE TABLE testSelect (x INTEGER, y INTEGER)"
+		self.cursor.execute(createTable)
+
+		self.cursor.execute("INSERT INTO testSelect (x, y) VALUES (1,2)")
+		self.cursor.execute("INSERT INTO testSelect (x, y) VALUES (2,6)")
+		self.connection.commit()
+
+		query = "SELECT x,y FROM testSelect WHERE x = 1"
+		start = time.time()
+		self.cursor.execute(query)
+		end = time.time()
+		for row in self.cursor:
+			print row
+		deltatime = 1000 * (end - start)
+		print "Time: " + str(deltatime) + " ms"
+		timeQuery = "EXPLAIN " + query
+		start = time.time()
+		self.cursor.execute(timeQuery)
+		end = time.time()
+		deltatime = 1000 * (end - start)
+		print "Time: " + str(deltatime) + " ms"
+		for row in self.cursor:
+			print row

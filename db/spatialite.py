@@ -76,6 +76,7 @@ class Spatialite:
 		for i, polygon in enumerate(polygons):
 			insert = "INSERT INTO POLYGONS (ID, polygon) VALUES (" + str(i) + ", " + self.polygonString(polygon) + ")"
 			self.cursor.execute(insert)
+		self.connection.commit()
 		print("\tInserted Polygons into polygons table")
 
 	def checkIntersection(self, polygons):
@@ -102,8 +103,11 @@ class Spatialite:
 			queryObject = {'name': query, 'times': list(), 'avg': 0}
 			for x in range(0, numberOfExecutions):
 				startTime = time.time()
-				self.cursor.execute(query)
-				executionTime = 1000 * (time.time() - startTime) # milliseconds
+				result = self.cursor.execute(query)
+				endTime = time.time()
+				executionTime = 1000 * (endTime - startTime) # milliseconds
+				for row in result:
+					print row
 				queryObject['times'].append(executionTime)
 				n = n + 1
 				if n % (math.ceil(allQueries/10.0)) == 0:
@@ -121,3 +125,24 @@ class Spatialite:
 			query['avg'] = avg
 
 		return results
+
+	def test(self):
+		init = 'SELECT InitSpatialMetadata()'
+		self.cursor.execute(init)
+
+		createTable = "CREATE TABLE test (x INTEGER, y INTEGER)"
+		self.cursor.execute(createTable)
+
+		self.cursor.execute("INSERT INTO test (x, y) VALUES (1,2)")
+		self.cursor.execute("INSERT INTO test (x, y) VALUES (2,6)")
+		self.connection.commit()
+
+		query = "SELECT x,y FROM test WHERE x = 1"
+		start = time.time()
+		result = self.cursor.execute(query)
+		end = time.time()
+		for row in result:
+			print row
+		deltatime = 1000 * (end - start)
+		print "Time: " + str(deltatime) + " ms"
+

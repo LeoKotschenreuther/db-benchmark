@@ -81,6 +81,7 @@ class Hana:
         for query in queries:
             queryObject = {'name': query, 'times': list(), 'avg': 0}
             for x in range(0, numberOfExecutions):
+                # print query
                 self.get_planviz_data(query, 'hana')
                 n = n + 1
                 if n % (math.ceil(allQueries/10.0)) == 0:
@@ -115,7 +116,11 @@ class Hana:
         string = "EXECUTE PLANVIZ STATEMENT ID '" + str(queryid) +"'" # exceute the query
         with open("execution_time_range_test.csv", "a") as out:
             start = time.time()
-            self.cursor.execute(string)
+            try:
+                self.cursor.execute(string)
+            except:
+                print "Error during execution of query" + query
+                return
             out.write(str(time.time()-start)+'\t' + resultname + '\n')
         self.cursor.execute(''' {CALL PLANVIZ_ACTION(?,?)} ''', (401, queryid)) # get plan after execution
         with open("results/hana/"+ resultname+".xml", "w") as xmlout:
