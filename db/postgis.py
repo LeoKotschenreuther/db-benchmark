@@ -45,7 +45,7 @@ class Postgis:
 		for i, polygon in enumerate(polygons):
 			insert = "INSERT INTO POLYGONS (ID, SIZE, polygon) VALUES (" + str(i) + ", " + str(polygonSize) + ", " + self.polygonString(polygon) + ")"
 			self.cursor.execute(insert)
-			self.connection.commit()
+		self.connection.commit()
 		print("\tInserted Polygons into polygons table")
 
 	def checkIntersection(self, polygons):
@@ -120,7 +120,7 @@ class Postgis:
 			print row
 		deltatime = 1000 * (end - start)
 		print "Time: " + str(deltatime) + " ms"
-		timeQuery = "EXPLAIN " + query
+		timeQuery = "EXPLAIN ANALYZE " + query
 		start = time.time()
 		self.cursor.execute(timeQuery)
 		end = time.time()
