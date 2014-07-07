@@ -11,7 +11,7 @@ polygonSizes = [
 	# 2000,
 ]
 # polygonSize = 3000
-areaLength = 100
+areaLength = 100000
 
 def runHana(polygonSize, polygons, areaPoints):
 	print('Starting Hana Benchmark')
@@ -45,7 +45,7 @@ def runSpatialiteMain(polygonSize, polygons, areaPoints):
 	areaString = spatialiteDB.polygonString(areaPoints)
 	spatialiteResults = spatialiteDB.runQueriesPoly(nineIntersection.spatialitequeries(areaString), numberOfExecutions, polygonSize)
 	spatialiteDB.disconnect()
-	print('Finished postgis Benchmark')
+	print('Finished spatialite Benchmark')
 	output.printSingleResult(spatialiteResults)
 	return spatialiteResults
 
@@ -68,6 +68,34 @@ def createPolygon(numPoints, midX, midY, areaLength):
 	# points.append(points[0])
 	# the first point doesn't get inserted a second time, we will handle that in the db-files
 	return points
+
+def createPoints(number):
+	hanaDB = hana.Hana()
+	hanaDB.dropCreateTable('BENCHMARK.B_POINTS')
+	hanaDB.disconnect()
+	postgisDB = postgis.Postgis()
+	postgisDB.dropCreateTable('POINTS')
+	postgisDB.disconnect()
+	spatialiteDB = spatialite.Spatialite('benchmark.db')
+	spatialiteDB.dropCreateTable('B_POINTS')
+	spatialiteDB.disconnect()
+	points = list()
+	for i in range(0, number):
+		x = random.random() * 2 * areaLength - areaLength
+		y = random.random() * 2 * areaLength - areaLength
+		points.append({'x' : x, 'y': y})
+		if i % 1000 == 999:
+			print "finished: " + str(i+1)
+
+	postgisDB = postgis.Postgis()
+	postgisDB.insertPoints(points)
+	postgisDB.disconnect()
+	hanaDB = hana.Hana()
+	hanaDB.insertPoints(points)
+	hanaDB.disconnect()
+	spatialiteDB = spatialite.Spatialite('benchmark.db')
+	spatialiteDB.insertPoints(points)
+	spatialiteDB.disconnect()
 
 def runSoccerAnalyticsWorkload():
 	results = list()
@@ -123,7 +151,7 @@ def run9IntersectionWorkload():
 
 		polygons.append(polygon2)
 
-		for x in range(0, 9998):
+		for x in range(0, 8):
 			polygon = list()
 			polygonIsValid = False
 			while not polygonIsValid:
@@ -146,8 +174,8 @@ def run9IntersectionWorkload():
 
 		# Create table in each db, insert polygons and measure results
 		# MySQL has no Intersectino function, so we can't test the nine intersection model
-		results.append(runPostgis(polygonSize, polygons, areaPoints))
-		results.append(runHana(polygonSize, polygons, areaPoints))
+		# results.append(runPostgis(polygonSize, polygons, areaPoints))
+		# results.append(runHana(polygonSize, polygons, areaPoints))
 		results.append(runSpatialiteMain(polygonSize, polygons, areaPoints))
 	
 	output.print9ISummary(results)
@@ -159,8 +187,10 @@ def printResultsToFile():
 
 
 # runSoccerAnalyticsWorkload()
-run9IntersectionWorkload()
+# run9IntersectionWorkload()
 
-# db = postgis.Postgis()
-# db.test()
+createPoints(1000000)
+
+# db = spatialite.Spatialite(':memory:')
+# db.setUpDB(False)
 # db.disconnect()

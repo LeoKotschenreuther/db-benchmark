@@ -1,6 +1,7 @@
 import psycopg2
 import math
 import time
+import csv
 
 class Postgis:
 
@@ -23,6 +24,9 @@ class Postgis:
 		string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))', 4326)"
 		return string
 
+	def pointString(self, point):
+		return "Point(" + str(point['x']) + " " + str(point['y']) + ")"
+
 	def isPolygonValid(self, polygon):
 		query = "SELECT ST_ISVALID(" + self.polygonString(polygon) + ")"
 		self.cursor.execute(query)
@@ -36,8 +40,12 @@ class Postgis:
 		dropPolygons = "DROP TABLE IF EXISTS " + table
 		self.cursor.execute(dropPolygons)
 		print("\tDropped Table")
-		createPolygonTable = "CREATE TABLE " + table + " (ID integer, size integer, polygon geometry(POLYGON, 4326))"
-		self.cursor.execute(createPolygonTable)
+		createTable = ""
+		if table == 'POLYGONS':
+			createTable = "CREATE TABLE " + table + " (ID integer, size integer, polygon geometry(POLYGON, 4326))"
+		elif table == 'POINTS':
+			createTable = "CREATE TABLE " + table + " (ID INTEGER, X FLOAT, Y FLOAT, POINT geometry(POINT, 4326))"
+		self.cursor.execute(createTable)
 		self.connection.commit()
 		print("\tCreated Table")
 
@@ -47,6 +55,24 @@ class Postgis:
 			self.cursor.execute(insert)
 		self.connection.commit()
 		print("\tInserted Polygons into polygons table")
+
+	def insertPoints(self, points):
+		for i, point in enumerate(points):
+			# print self.pointString(point)
+			insert = '''INSERT INTO POINTS (ID, X, Y, POINT) VALUES (%s, %s, %s, ST_PointFromText(%s, 4326))'''
+			self.cursor.execute(insert, (i, point['x'], point['y'], self.pointString(point)))
+			self.connection.commit()
+			if i % 1000 == 999:
+				print "finished: " + str(i+1)
+				self.connection.commit()
+			# self.cursor.execute(insert, (i, point['x'], point['y'], 'POINT(1 2)'))
+		self.connection.commit()
+		print("\tInserted Points into Points table")
+		# query = "SELECT COUNT(*) FROM POINTS"
+		# self.cursor.execute(query)
+		# rows = self.cursor.fetchall()
+		# for row in rows:
+		# 	print row[0]
 
 	def checkIntersection(self, polygons):
 		query = "SELECT ST_Intersects(" + self.polygonString(polygons[0]) + ", " + self.polygonString(polygons[1]) + ")"

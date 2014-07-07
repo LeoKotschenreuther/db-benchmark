@@ -33,6 +33,9 @@ class Hana:
         string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))')"
         return string
 
+    def pointString(self, point):
+        return "POINT(" + str(point['x']) + " " + str(point['y']) + ")"
+
     def isPolygonValid(self, polygon):
         query = "SELECT " + self.polygonString(polygon) + ".ST_IsValid() FROM dummy"
         self.cursor.execute(query)
@@ -58,8 +61,12 @@ class Hana:
             print("\tDropped Table")
         except:
             print("\tCould not drop table as it doesn't exist")
-        createPolygonTable = "CREATE COLUMN TABLE " + table + " (ID INTEGER, SIZE INTEGER, POLYGON ST_GEOMETRY)"
-        self.cursor.execute(createPolygonTable)
+        createTable = ""
+        if table == 'BENCHMARK.POLYGONS':
+            createTable = "CREATE TABLE " + table + " (ID INTEGER, size INTEGER, POLYGON ST_GEOMETRY)"
+        elif table == 'BENCHMARK.B_POINTS':
+            createTable = "CREATE COLUMN TABLE BENCHMARK.B_POINTS (ID INTEGER, X FLOAT, Y FLOAT, POINT ST_POINT)"
+        self.cursor.execute(createTable)
         print("\tCreated Table")
 
     def insertPolygons(self, polygons, polygonSize):
@@ -67,6 +74,16 @@ class Hana:
             insert = "INSERT INTO BENCHMARK.POLYGONS (ID, SIZE, polygon) VALUES (" + str(i) + ", " + str(polygonSize) + ", " + self.polygonString(polygon) + ")"
             self.cursor.execute(insert)
         print("\tInserted Polygons into polygons table")
+
+    def insertPoints(self, points):
+        for i, point in enumerate(points):
+            # print self.pointString(point)
+            insert = '''INSERT INTO BENCHMARK.B_POINTS (ID, X, Y, POINT) VALUES (?, ?, ?, NEW ST_POINT(?))'''
+            self.cursor.execute(insert, (i, point['x'], point['y'], self.pointString(point)))
+            # self.cursor.execute(insert, (i, point['x'], point['y'], 'POINT(1 2)'))
+            if i % 1000 == 999:
+                print "finished: " + str(i+1)
+        print("\tInserted Points into Points table")
 
     def runQueriesPoly(self, queries, numberOfExecutions, polygonSize):
         print '\tPolygonsize: ' + str(polygonSize)

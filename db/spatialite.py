@@ -21,9 +21,11 @@ class Spatialite:
 		init = 'SELECT InitSpatialMetadata()'
 		self.cursor.execute(init)
 
-		createTable = "CREATE TABLE test (x INTEGER, y INTEGER)"
+		# createTable = "CREATE TABLE test (x INTEGER, y INTEGER)"
+		createTable = "CREATE TABLE points (id INTEGER, x FLOAT, y FLOAT)"
 		self.cursor.execute(createTable)
-		addPointColumn = "SELECT AddGeometryColumn ('test', 'point', 4326, 'POINT', 2)"
+		# addPointColumn = "SELECT AddGeometryColumn ('test', 'point', 4326, 'POINT', 2)"
+		addPointColumn = "SELECT AddGeometryColumn ('points', 'point', 4326, 'POINT', 2)"
 		self.cursor.execute(addPointColumn)
 
 		if enableIndex:
@@ -33,17 +35,44 @@ class Spatialite:
 
 		print "Table is created!"
 
-		with open('data.csv','rb') as csvfile:
-			reader = csv.reader(csvfile)
-			to_db = [(i[0], i[1]) for i in reader]
+		# with open('data.csv','rb') as csvfile:
+		# 	reader = csv.reader(csvfile)
+		# 	to_db = [(i[0], i[1]) for i in reader]
 
-		self.cursor.executemany("INSERT INTO test (x, y) VALUES (?, ?);", to_db)
-		self.connection.commit()
-		print "Inserted points into the table"
-		self.cursor.execute("UPDATE test set point = MakePoint(x, y, 4326)")
-		self.connection.commit()
+		# with open('points.csv','rb') as csvfile:
+		# 	reader = csv.reader(csvfile)
+		# 	to_db = [(i[0], i[1], i[2], i[3]) for i in reader]
 
-		print "Did set up the db"
+		# self.cursor.executemany("INSERT INTO test (x, y) VALUES (?, ?);", to_db)
+		# self.cursor.executemany("INSERT INTO POINTS (id, x, y, point) VALUES (?, ?, ?, ?);", to_db)
+		# self.connection.commit()
+		# print "Inserted points into the table"
+		# self.cursor.execute("UPDATE test set point = MakePoint(x, y, 4326)")
+		# self.connection.commit()
+
+		# print "Did set up the db"
+
+		# query = "SELECT COUNT(*) FROM POINTS"
+		# result = self.cursor.execute(query)
+		# for row in result:
+		# 	print result
+
+	def dropCreateTable(self, table):
+		dropTable = "DROP TABLE IF EXISTS " + table
+		self.cursor.execute(dropTable)
+		print("\tDropped Table")
+		createTable = ""
+		addColumn = ""
+		if table == 'POLYGONS':
+			createTable = "CREATE TABLE " + table + " (ID integer, size integer, polygon geometry(POLYGON, 4326))"
+		elif table == 'B_POINTS':
+			createTable = "CREATE TABLE B_POINTS (ID INTEGER, X FLOAT, Y FLOAT)"
+			addColumn = "SELECT AddGeometryColumn ('B_POINTS', 'point', 4326, 'POINT', 2)"
+		self.cursor.execute(createTable)
+		self.cursor.execute(addColumn)
+
+		self.connection.commit()
+		print("\tCreated Table")
 
 	def polygonString(self, polygon):
 		# PolygonFromText('Polygon((-0.8 0.7,-0.6 0.7,-0.6 0.4,-0.8 0.4,-0.8 0.7))', 4326)
@@ -79,6 +108,22 @@ class Spatialite:
 		self.connection.commit()
 		print("\tInserted Polygons into polygons table")
 
+	def insertPoints(self, points):
+		for i, point in enumerate(points):
+			# print self.pointString(point)
+			insert = '''INSERT INTO B_POINTS (ID, X, Y, POINT) VALUES (?, ?, ?, MakePoint(?, ?, 4326))'''
+			self.cursor.execute(insert, (i, point['x'], point['y'], point['x'], point['y']))
+			# self.cursor.execute(insert, (i, point['x'], point['y'], 'POINT(1 2)'))
+			if i % 1000 == 999:
+				print "finished: " + str(i+1)
+				self.connection.commit()
+		self.connection.commit()
+		print("\tInserted Points into Points table")
+		# query = "select X(point) from B_POINTS WHERE ID = 0"
+		# result = self.cursor.execute(query)
+		# for row in result:
+		# 	print row
+
 	def checkIntersection(self, polygons):
 		query = "SELECT Intersects(" + self.polygonString(polygons[0]) + ", " + self.polygonString(polygons[1]) + ")"
 		self.cursor.execute(query)
@@ -106,8 +151,8 @@ class Spatialite:
 				result = self.cursor.execute(query)
 				endTime = time.time()
 				executionTime = 1000 * (endTime - startTime) # milliseconds
-				for row in result:
-					print row
+				# for row in result:
+				# 	print row[0]
 				queryObject['times'].append(executionTime)
 				n = n + 1
 				if n % (math.ceil(allQueries/10.0)) == 0:
