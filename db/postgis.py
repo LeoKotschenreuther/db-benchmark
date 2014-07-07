@@ -18,10 +18,10 @@ class Postgis:
 
 	def polygonString(self, polygon):
 		# ST_GeomFromText('Polygon((-0.8 0.7,-0.6 0.7,-0.6 0.4,-0.8 0.4,-0.8 0.7))', 4326)
-		string = "ST_GeomFromText('Polygon(("
+		string = "Polygon(("
 		for point in polygon:
 			string += str(point['x']) + " " + str(point['y']) + ","
-		string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))', 4326)"
+		string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))"
 		return string
 
 	def pointString(self, point):
@@ -49,10 +49,14 @@ class Postgis:
 		self.connection.commit()
 		print("\tCreated Table")
 
-	def insertPolygons(self, polygons, polygonSize):
+	def insertPolygons(self, polygons):
 		for i, polygon in enumerate(polygons):
-			insert = "INSERT INTO POLYGONS (ID, SIZE, polygon) VALUES (" + str(i) + ", " + str(polygonSize) + ", " + self.polygonString(polygon) + ")"
-			self.cursor.execute(insert)
+			size = len(polygon)
+			insert = '''INSERT INTO POLYGONS (ID, SIZE, polygon) VALUES (%s, %s, ST_GeomFromText(%s, 4326))'''
+			self.cursor.execute(insert, (i, size, self.polygonString(polygon)))
+			if i % 1000 == 999:
+				print "finished: " + str(i+1)
+				self.connection.commit()
 		self.connection.commit()
 		print("\tInserted Polygons into polygons table")
 
@@ -61,7 +65,6 @@ class Postgis:
 			# print self.pointString(point)
 			insert = '''INSERT INTO POINTS (ID, X, Y, POINT) VALUES (%s, %s, %s, ST_PointFromText(%s, 4326))'''
 			self.cursor.execute(insert, (i, point['x'], point['y'], self.pointString(point)))
-			self.connection.commit()
 			if i % 1000 == 999:
 				print "finished: " + str(i+1)
 				self.connection.commit()

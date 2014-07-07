@@ -27,22 +27,27 @@ class Hana:
 
     def polygonString(self, polygon):
         # NEW ST_POLYGON('Polygon((-0.8 0.7, -0.6 0.7, -0.6 0.4, -0.8 0.4, -0.8 0.7))')
-        string = "NEW ST_Polygon('Polygon(("
+        string = "Polygon(("
         for point in polygon:
             string += str(point['x']) + " " + str(point['y']) + ","
-        string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))')"
+        string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))"
         return string
 
     def pointString(self, point):
         return "POINT(" + str(point['x']) + " " + str(point['y']) + ")"
 
     def isPolygonValid(self, polygon):
-        query = "SELECT " + self.polygonString(polygon) + ".ST_IsValid() FROM dummy"
-        self.cursor.execute(query)
-        rows = self.cursor.fetchall()
-        for row in rows:
-            if row[0] == 1 : return True
-            else: return False
+        query = "SELECT NEW ST_POLYGON('" + self.polygonString(polygon) + "').ST_IsValid() FROM dummy"
+        # query = '''SELECT NEW ST_POLYGON(?).ST_IsValid() FROM dummy'''
+        try:
+            self.cursor.execute(query)
+            rows = self.cursor.fetchall()
+            for row in rows:
+                if row[0] == 1 : return True
+                else: return False
+        except Exception as e:
+            print e
+            return False
 
     def checkIntersection(self, polygons):
         query = "SELECT " + self.polygonString(polygons[0]) + ".ST_Intersects(" + self.polygonString(polygons[1]) + ") FROM dummy"
@@ -63,16 +68,20 @@ class Hana:
             print("\tCould not drop table as it doesn't exist")
         createTable = ""
         if table == 'BENCHMARK.POLYGONS':
-            createTable = "CREATE TABLE " + table + " (ID INTEGER, size INTEGER, POLYGON ST_GEOMETRY)"
+            createTable = "CREATE COLUMN TABLE BENCHMARK.POLYGONS (ID INTEGER, size INTEGER, POLYGON ST_GEOMETRY)"
         elif table == 'BENCHMARK.B_POINTS':
             createTable = "CREATE COLUMN TABLE BENCHMARK.B_POINTS (ID INTEGER, X FLOAT, Y FLOAT, POINT ST_POINT)"
         self.cursor.execute(createTable)
         print("\tCreated Table")
 
-    def insertPolygons(self, polygons, polygonSize):
+    def insertPolygons(self, polygons):
         for i, polygon in enumerate(polygons):
-            insert = "INSERT INTO BENCHMARK.POLYGONS (ID, SIZE, polygon) VALUES (" + str(i) + ", " + str(polygonSize) + ", " + self.polygonString(polygon) + ")"
-            self.cursor.execute(insert)
+            size = len(polygon)
+            # insert = "INSERT INTO BENCHMARK.POLYGONS (ID, SIZE, polygon) VALUES (" + str(i) + ", " + str(polygonSize) + ", " + self.polygonString(polygon) + ")"
+            insert = '''INSERT INTO BENCHMARK.POLYGONS (ID, SIZE, polygon) VALUES (?, ?, New ST_POLYGON(?))'''
+            self.cursor.execute(insert, (i, size, self.polygonString(polygon)))
+            if i % 1000 == 999:
+                print "finished: " + str(i+1)
         print("\tInserted Polygons into polygons table")
 
     def insertPoints(self, points):

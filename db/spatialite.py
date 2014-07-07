@@ -18,8 +18,11 @@ class Spatialite:
 
 	def setUpDB(self, enableIndex):
 
-		init = 'SELECT InitSpatialMetadata()'
-		self.cursor.execute(init)
+		try:
+			init = 'SELECT InitSpatialMetadata()'
+			self.cursor.execute(init)
+		except:
+			print "Did already run InitSpatialMetadata"
 
 		# createTable = "CREATE TABLE test (x INTEGER, y INTEGER)"
 		# createTable = "CREATE TABLE points (id INTEGER, x FLOAT, y FLOAT)"
@@ -58,13 +61,19 @@ class Spatialite:
 		# 	print result
 
 	def dropCreateTable(self, table):
+		try:
+			init = 'SELECT InitSpatialMetadata()'
+			self.cursor.execute(init)
+		except:
+			print "\tDid already run InitSpatialMetadata"
 		dropTable = "DROP TABLE IF EXISTS " + table
 		self.cursor.execute(dropTable)
 		print("\tDropped Table")
 		createTable = ""
 		addColumn = ""
 		if table == 'POLYGONS':
-			createTable = "CREATE TABLE " + table + " (ID integer, size integer, polygon geometry(POLYGON, 4326))"
+			createTable = "CREATE TABLE POLYGONS (ID integer, size integer)"
+			addColumn = "SELECT AddGeometryColumn ('POLYGONS', 'polygon', 4326, 'POLYGON', 2)"
 		elif table == 'B_POINTS':
 			createTable = "CREATE TABLE B_POINTS (ID INTEGER, X FLOAT, Y FLOAT)"
 			addColumn = "SELECT AddGeometryColumn ('B_POINTS', 'point', 4326, 'POINT', 2)"
@@ -76,15 +85,18 @@ class Spatialite:
 
 	def polygonString(self, polygon):
 		# PolygonFromText('Polygon((-0.8 0.7,-0.6 0.7,-0.6 0.4,-0.8 0.4,-0.8 0.7))', 4326)
-		string = "PolygonFromText('Polygon(("
+		string = "Polygon(("
 		for point in polygon:
 			string += str(point['x']) + " " + str(point['y']) + ","
-		string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))', 4326)"
+		string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))"
 		return string
 
 	def isPolygonValid(self, polygon):
-		init = 'SELECT InitSpatialMetadata()'
-		self.cursor.execute(init)
+		try:
+			init = 'SELECT InitSpatialMetadata()'
+			self.cursor.execute(init)
+		except:
+			print "Did already run InitSpatialMetadata"
 		query = "SELECT IsValid(" + self.polygonString(polygon) + ")"
 		self.cursor.execute(query)
 		rows = self.cursor.fetchall()
@@ -95,16 +107,13 @@ class Spatialite:
 		return isValid
 
 	def insertPolygons(self, polygons):
-		init = 'SELECT InitSpatialMetadata()'
-		self.cursor.execute(init)
-		createPolygonTable = "CREATE TABLE POLYGONS (ID integer)"
-		self.cursor.execute(createPolygonTable)
-		addPolygonColumn = "SELECT AddGeometryColumn ('polygons', 'polygon', 4326, 'POLYGON', 2)"
-		self.cursor.execute(addPolygonColumn)
-		print("\tCreated Table Polygons")
 		for i, polygon in enumerate(polygons):
-			insert = "INSERT INTO POLYGONS (ID, polygon) VALUES (" + str(i) + ", " + self.polygonString(polygon) + ")"
-			self.cursor.execute(insert)
+			size = len(polygon)
+			insert = '''INSERT INTO POLYGONS (ID, size, polygon) VALUES (?, ?, PolygonFromText(?, 4326))'''
+			self.cursor.execute(insert, (i, size, self.polygonString(polygon)))
+			if i % 1000 == 999:
+				print "finished: " + str(i+1)
+				self.connection.commit()
 		self.connection.commit()
 		print("\tInserted Polygons into polygons table")
 
@@ -119,10 +128,10 @@ class Spatialite:
 				self.connection.commit()
 		self.connection.commit()
 		print("\tInserted Points into Points table")
-		query = "select X(point) from B_POINTS WHERE ID = 0"
-		result = self.cursor.execute(query)
-		for row in result:
-			print row
+		# query = "select X(point) from B_POINTS WHERE ID = 0"
+		# result = self.cursor.execute(query)
+		# for row in result:
+		# 	print row
 
 	def checkIntersection(self, polygons):
 		query = "SELECT Intersects(" + self.polygonString(polygons[0]) + ", " + self.polygonString(polygons[1]) + ")"
@@ -172,8 +181,11 @@ class Spatialite:
 		return results
 
 	def test(self):
-		init = 'SELECT InitSpatialMetadata()'
-		self.cursor.execute(init)
+		try:
+			init = 'SELECT InitSpatialMetadata()'
+			self.cursor.execute(init)
+		except:
+			print "Did already run InitSpatialMetadata"
 
 		createTable = "CREATE TABLE test (x INTEGER, y INTEGER)"
 		self.cursor.execute(createTable)
