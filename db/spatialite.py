@@ -22,18 +22,18 @@ class Spatialite:
 		self.cursor.execute(init)
 
 		# createTable = "CREATE TABLE test (x INTEGER, y INTEGER)"
-		createTable = "CREATE TABLE points (id INTEGER, x FLOAT, y FLOAT)"
-		self.cursor.execute(createTable)
-		# addPointColumn = "SELECT AddGeometryColumn ('test', 'point', 4326, 'POINT', 2)"
-		addPointColumn = "SELECT AddGeometryColumn ('points', 'point', 4326, 'POINT', 2)"
-		self.cursor.execute(addPointColumn)
+		# createTable = "CREATE TABLE points (id INTEGER, x FLOAT, y FLOAT)"
+		# self.cursor.execute(createTable)
+		# # addPointColumn = "SELECT AddGeometryColumn ('test', 'point', 4326, 'POINT', 2)"
+		# addPointColumn = "SELECT AddGeometryColumn ('points', 'point', 4326, 'POINT', 2)"
+		# self.cursor.execute(addPointColumn)
 
-		if enableIndex:
-			createIndex = "SELECT CreateSpatialIndex('test', 'point')"
-			self.cursor.execute(createIndex)
-			print "created Index"
+		# if enableIndex:
+		# 	createIndex = "SELECT CreateSpatialIndex('test', 'point')"
+		# 	self.cursor.execute(createIndex)
+		# 	print "created Index"
 
-		print "Table is created!"
+		# print "Table is created!"
 
 		# with open('data.csv','rb') as csvfile:
 		# 	reader = csv.reader(csvfile)
@@ -119,10 +119,10 @@ class Spatialite:
 				self.connection.commit()
 		self.connection.commit()
 		print("\tInserted Points into Points table")
-		# query = "select X(point) from B_POINTS WHERE ID = 0"
-		# result = self.cursor.execute(query)
-		# for row in result:
-		# 	print row
+		query = "select X(point) from B_POINTS WHERE ID = 0"
+		result = self.cursor.execute(query)
+		for row in result:
+			print row
 
 	def checkIntersection(self, polygons):
 		query = "SELECT Intersects(" + self.polygonString(polygons[0]) + ", " + self.polygonString(polygons[1]) + ")"

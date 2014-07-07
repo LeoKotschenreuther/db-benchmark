@@ -189,7 +189,7 @@ def printResultsToFile():
 # runSoccerAnalyticsWorkload()
 # run9IntersectionWorkload()
 
-createPoints(1000000)
+createPoints(1000)
 
 # db = spatialite.Spatialite(':memory:')
 # db.setUpDB(False)
