@@ -9,7 +9,7 @@ import math
 numberOfExecutions = 100
 polygonSizes = [10, 50, 200, 1000]
 areaLength = 100000
-resetTables = False
+resetTables = True
 
 
 def runHana(polygonSize, polygons, areaPoints):

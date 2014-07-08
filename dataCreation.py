@@ -28,46 +28,45 @@ def createPolygon(numPoints, areaLength):
 	return points
 
 def createPolygons(resetTables, sizes, areaLength):
-	for a in range(0, numPolygons / 1000):
-		polygons = list()
-		for i, polygonSize in enumerate(sizes):
-			for x in range(0, int(math.ceil(1000 / len(sizes)))):
-				polygonIsValid = False
-				polygon = list()
-				while not polygonIsValid:
-					polygon = createPolygon(polygonSize, areaLength)
-					# check whether they intersect:
-					# hanaDB = hana.Hana()
-					# polygonIsValid = hanaDB.isPolygonValid(polygon)
-					# hanaDB.disconnect()
-					postgisDB = postgis.Postgis()
-					polygonIsValid = postgisDB.isPolygonValid(polygon1)
-					postgisDB.disconnect()
-					# spatialiteDB = spatialite.Spatialite(':memory:')
-					# polygonIsValid = spatialiteDB.isPolygonValid(polygon1)
-					# spatialiteDB.disconnect()
-				polygons.append(polygon)
-				if (x + i * int(math.ceil(1000 / len(sizes)))) % 100 == 99:
-					print "finished: " + str(x + i * int(math.ceil(1000 / len(sizes))) + 1)
+	polygons = list()
+	for i, polygonSize in enumerate(sizes):
+		for x in range(0, int(math.ceil(numPolygons / len(sizes)))):
+			polygonIsValid = False
+			polygon = list()
+			while not polygonIsValid:
+				polygon = createPolygon(polygonSize, areaLength)
+				# check whether they intersect:
+				# hanaDB = hana.Hana()
+				# polygonIsValid = hanaDB.isPolygonValid(polygon)
+				# hanaDB.disconnect()
+				postgisDB = postgis.Postgis()
+				polygonIsValid = postgisDB.isPolygonValid(polygon1)
+				postgisDB.disconnect()
+				# spatialiteDB = spatialite.Spatialite(':memory:')
+				# polygonIsValid = spatialiteDB.isPolygonValid(polygon1)
+				# spatialiteDB.disconnect()
+			polygons.append(polygon)
+			if (x + i * int(math.ceil(numPolygons / len(sizes)))) % 1000 == 999:
+				print "finished: " + str(x + i * int(math.ceil(1000 / len(sizes))) + 1)
 
-		print "Created valid Polygons"
+	print "Created valid Polygons"
 
-		postgisDB = postgis.Postgis()
-		if resetTables and a == 0: postgisDB.dropCreateTable('POLYGONS')
-		postgisDB.insertPolygons(polygons)
-		postgisDB.disconnect()
+	postgisDB = postgis.Postgis()
+	if resetTables and a == 0: postgisDB.dropCreateTable('POLYGONS')
+	postgisDB.insertPolygons(polygons)
+	postgisDB.disconnect()
 
-		hanaDB = hana.Hana()
-		if resetTables and a == 0: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-		hanaDB.insertPolygons(polygons)
-		hanaDB.disconnect()
+	hanaDB = hana.Hana()
+	if resetTables and a == 0: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	hanaDB.insertPolygons(polygons)
+	hanaDB.disconnect()
 
-		spatialiteDB = spatialite.Spatialite('benchmark.db')
-		if resetTables and a == 0: spatialiteDB.dropCreateTable('POLYGONS')
-		spatialiteDB.insertPolygons(polygons)
-		spatialiteDB.disconnect()
+	spatialiteDB = spatialite.Spatialite('benchmark.db')
+	if resetTables and a == 0: spatialiteDB.dropCreateTable('POLYGONS')
+	spatialiteDB.insertPolygons(polygons)
+	spatialiteDB.disconnect()
 
-		print "Finished: " + str((a + 1) * 1000 * 100 / numPolygons) + "%"
+	# print "Finished: " + str((a + 1) * num * 100 / numPolygons) + "%"
 
 def createPoints(areaLength):
 	points = list()
