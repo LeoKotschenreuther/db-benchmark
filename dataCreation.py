@@ -2,9 +2,9 @@ from db import mysql, postgis, spatialite, hana
 import random
 import math
 
-numPoints = 1000000
+numPoints = 100000
 numLines = 1000
-numPolygons = 200000
+numPolygons = 10000
 
 def createPolygon(numPoints, areaLength):
 	if numPoints < 3:
@@ -27,7 +27,7 @@ def createPolygon(numPoints, areaLength):
 	# print points
 	return points
 
-def createPolygons(sizes, areaLength):
+def createPolygons(resetTables, sizes, areaLength):
 	polygons = list()
 	for i, polygonSize in enumerate(sizes):
 		for x in range(0, int(math.ceil(numPolygons / len(sizes)))):
@@ -51,18 +51,18 @@ def createPolygons(sizes, areaLength):
 
 	print "Created valid Polygons"
 
-	postgisDB = postgis.Postgis()
-	postgisDB.dropCreateTable('POLYGONS')
-	postgisDB.insertPolygons(polygons)
-	postgisDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# postgisDB.dropCreateTable('POLYGONS')
+	# postgisDB.insertPolygons(polygons)
+	# postgisDB.disconnect()
 
-	hanaDB = hana.Hana()
-	hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-	hanaDB.insertPolygons(polygons)
-	hanaDB.disconnect()
+	# hanaDB = hana.Hana()
+	# hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	# hanaDB.insertPolygons(polygons)
+	# hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
-	spatialiteDB.dropCreateTable('POLYGONS')
+	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
 	spatialiteDB.insertPolygons(polygons)
 	spatialiteDB.disconnect()
 
@@ -75,15 +75,15 @@ def createPoints(areaLength):
 		if i % 1000 == 999:
 			print "finished: " + str(i+1)
 
-	postgisDB = postgis.Postgis()
-	postgisDB.dropCreateTable('POINTS')
-	postgisDB.insertPoints(points)
-	postgisDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# postgisDB.dropCreateTable('POINTS')
+	# postgisDB.insertPoints(points)
+	# postgisDB.disconnect()
 
-	hanaDB = hana.Hana()
-	hanaDB.dropCreateTable('BENCHMARK.B_POINTS')
-	hanaDB.insertPoints(points)
-	hanaDB.disconnect()
+	# hanaDB = hana.Hana()
+	# hanaDB.dropCreateTable('BENCHMARK.B_POINTS')
+	# hanaDB.insertPoints(points)
+	# hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	spatialiteDB.dropCreateTable('B_POINTS')

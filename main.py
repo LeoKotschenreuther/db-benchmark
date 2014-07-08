@@ -9,6 +9,8 @@ import math
 numberOfExecutions = 100
 polygonSizes = [10, 100, 1000, 2000]
 areaLength = 100000
+resetTables = False
+
 
 def runHana(polygonSize, polygons, areaPoints):
 	print('Starting Hana Benchmark')
@@ -81,9 +83,12 @@ def printResultsToFile():
 	output.printSummary(results)
 	print('Finished printing results')
 
-dataCreation.createPolygons(polygonSizes, areaLength)
+resetTables = False
+
+dataCreation.createPoints(areaLength)
+dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
 # dataCreation.createLines()
-# dataCreation.createPoints(areaLength)
+
 
 # runSoccerAnalyticsWorkload()
 # run9IntersectionWorkload()
