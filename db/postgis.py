@@ -29,12 +29,16 @@ class Postgis:
 
 	def isPolygonValid(self, polygon):
 		query = "SELECT ST_ISVALID(" + self.polygonString(polygon) + ")"
-		self.cursor.execute(query)
-		rows = self.cursor.fetchall()
-		isValid = False
-		for row in rows:
-			isValid = row[0]
-		return isValid
+		try:
+			self.cursor.execute(query)
+			rows = self.cursor.fetchall()
+			isValid = False
+			for row in rows:
+				isValid = row[0]
+			return isValid
+		except Exception as e:
+			print e
+			return False
 
 	def dropCreateTable(self, table):
 		dropPolygons = "DROP TABLE IF EXISTS " + table

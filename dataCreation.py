@@ -4,7 +4,7 @@ import math
 
 numPoints = 1000000
 numLines = 1000
-numPolygons = 1000
+numPolygons = 10000
 
 def createPolygon(numPoints, areaLength):
 	if numPoints < 3:
@@ -37,18 +37,18 @@ def createPolygons(resetTables, sizes, areaLength):
 				while not polygonIsValid:
 					polygon = createPolygon(polygonSize, areaLength)
 					# check whether they intersect:
-					hanaDB = hana.Hana()
-					polygonIsValid = hanaDB.isPolygonValid(polygon)
-					hanaDB.disconnect()
-					# postgisDB = postgis.Postgis()
-					# polygonIsValid = postgisDB.isPolygonValid(polygon1)
-					# postgisDB.disconnect()
+					# hanaDB = hana.Hana()
+					# polygonIsValid = hanaDB.isPolygonValid(polygon)
+					# hanaDB.disconnect()
+					postgisDB = postgis.Postgis()
+					polygonIsValid = postgisDB.isPolygonValid(polygon1)
+					postgisDB.disconnect()
 					# spatialiteDB = spatialite.Spatialite(':memory:')
 					# polygonIsValid = spatialiteDB.isPolygonValid(polygon1)
 					# spatialiteDB.disconnect()
 				polygons.append(polygon)
-				if (x + i * int(math.ceil(numPolygons / len(sizes)))) % 100 == 99:
-					print "finished: " + str(x + i * int(math.ceil(numPolygons / len(sizes))) + 1)
+				if (x + i * int(math.ceil(1000 / len(sizes)))) % 100 == 99:
+					print "finished: " + str(x + i * int(math.ceil(1000 / len(sizes))) + 1)
 
 		print "Created valid Polygons"
 
@@ -67,7 +67,7 @@ def createPolygons(resetTables, sizes, areaLength):
 		spatialiteDB.insertPolygons(polygons)
 		spatialiteDB.disconnect()
 
-		print "Finished: " + str((a + 1) * 1000 / numPolygons * 100) + "%"
+		print "Finished: " + str((a + 1) * 1000 * 100 / numPolygons) + "%"
 
 def createPoints(areaLength):
 	points = list()
