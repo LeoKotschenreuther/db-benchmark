@@ -29,7 +29,6 @@ def createPolygon(numPoints, areaLength):
 
 def createPolygons(resetTables, sizes, areaLength):
 	for a in range(0, numPolygons / 1000):
-		print a
 		polygons = list()
 		for i, polygonSize in enumerate(sizes):
 			for x in range(0, int(math.ceil(1000 / len(sizes)))):
