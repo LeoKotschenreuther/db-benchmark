@@ -4,7 +4,7 @@ import math
 
 numPoints = 1000000
 numLines = 1000
-numPolygons = 8000
+numPolygons = 1000
 
 def createPolygon(numPoints, areaLength):
 	if numPoints < 3:
@@ -28,7 +28,7 @@ def createPolygon(numPoints, areaLength):
 	return points
 
 def createPolygons(resetTables, sizes, areaLength):
-	for i in range(0, numPolygons / 1000):
+	for a in range(0, numPolygons / 1000):
 		polygons = list()
 		for i, polygonSize in enumerate(sizes):
 			for x in range(0, int(math.ceil(1000 / len(sizes)))):
@@ -53,21 +53,21 @@ def createPolygons(resetTables, sizes, areaLength):
 		print "Created valid Polygons"
 
 		postgisDB = postgis.Postgis()
-		if resetTables and i == 0: postgisDB.dropCreateTable('POLYGONS')
+		if resetTables and a == 0: postgisDB.dropCreateTable('POLYGONS')
 		postgisDB.insertPolygons(polygons)
 		postgisDB.disconnect()
 
 		hanaDB = hana.Hana()
-		if resetTables and i == 0: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+		if resetTables and a == 0: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
 		hanaDB.insertPolygons(polygons)
 		hanaDB.disconnect()
 
 		spatialiteDB = spatialite.Spatialite('benchmark.db')
-		if resetTables and i == 0: spatialiteDB.dropCreateTable('POLYGONS')
+		if resetTables and a == 0: spatialiteDB.dropCreateTable('POLYGONS')
 		spatialiteDB.insertPolygons(polygons)
 		spatialiteDB.disconnect()
 
-		print "Finished: " + str((i + 1) / numPolygons / len(sizes) / 1000 * 100) + "%"
+		print "Finished: " + str((a + 1) / numPolygons / len(sizes) / 1000 * 100) + "%"
 
 def createPoints(areaLength):
 	points = list()
