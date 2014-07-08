@@ -52,18 +52,18 @@ def createPolygons(resetTables, sizes, areaLength):
 
 		print "Created valid Polygons"
 
-		# postgisDB = postgis.Postgis()
-		# if resetTables: postgisDB.dropCreateTable('POLYGONS')
-		# postgisDB.insertPolygons(polygons)
-		# postgisDB.disconnect()
+		postgisDB = postgis.Postgis()
+		if resetTables and i == 0: postgisDB.dropCreateTable('POLYGONS')
+		postgisDB.insertPolygons(polygons)
+		postgisDB.disconnect()
 
-		# hanaDB = hana.Hana()
-		# if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-		# hanaDB.insertPolygons(polygons)
-		# hanaDB.disconnect()
+		hanaDB = hana.Hana()
+		if resetTables and i == 0: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+		hanaDB.insertPolygons(polygons)
+		hanaDB.disconnect()
 
 		spatialiteDB = spatialite.Spatialite('benchmark.db')
-		if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
+		if resetTables and i == 0: spatialiteDB.dropCreateTable('POLYGONS')
 		spatialiteDB.insertPolygons(polygons)
 		spatialiteDB.disconnect()
 
