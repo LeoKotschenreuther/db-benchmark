@@ -29,6 +29,7 @@ def createPolygon(numPoints, areaLength):
 
 def createPolygons(resetTables, sizes, areaLength):
 	for a in range(0, numPolygons / 1000):
+		print a
 		polygons = list()
 		for i, polygonSize in enumerate(sizes):
 			for x in range(0, int(math.ceil(1000 / len(sizes)))):
@@ -67,7 +68,7 @@ def createPolygons(resetTables, sizes, areaLength):
 		spatialiteDB.insertPolygons(polygons)
 		spatialiteDB.disconnect()
 
-		print "Finished: " + str((a + 1) / numPolygons / len(sizes) / 1000 * 100) + "%"
+		print "Finished: " + str((a + 1) * 1000 / numPolygons * 100) + "%"
 
 def createPoints(areaLength):
 	points = list()
