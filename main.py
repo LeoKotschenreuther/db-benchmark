@@ -83,10 +83,8 @@ def printResultsToFile():
 	output.printSummary(results)
 	print('Finished printing results')
 
-resetTables = False
-
 dataCreation.createPoints(areaLength)
-dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
+# dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
 # dataCreation.createLines()
 
 

@@ -65,7 +65,7 @@ class Postgis:
 			# print self.pointString(point)
 			insert = '''INSERT INTO POINTS (ID, X, Y, POINT) VALUES (%s, %s, %s, ST_PointFromText(%s, 4326))'''
 			self.cursor.execute(insert, (i, point['x'], point['y'], self.pointString(point)))
-			if i % 1000 == 999:
+			if i % 10000 == 9999:
 				print "finished: " + str(i+1)
 				self.connection.commit()
 			# self.cursor.execute(insert, (i, point['x'], point['y'], 'POINT(1 2)'))

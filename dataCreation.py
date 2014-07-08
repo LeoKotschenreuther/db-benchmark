@@ -4,7 +4,7 @@ import math
 
 numPoints = 1000000
 numLines = 1000
-numPolygons = 10000
+numPolygons = 1000
 
 def createPolygon(numPoints, areaLength):
 	if numPoints < 3:
@@ -51,20 +51,20 @@ def createPolygons(resetTables, sizes, areaLength):
 
 	print "Created valid Polygons"
 
-	postgisDB = postgis.Postgis()
-	postgisDB.dropCreateTable('POLYGONS')
-	postgisDB.insertPolygons(polygons)
-	postgisDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# if resetTables: postgisDB.dropCreateTable('POLYGONS')
+	# postgisDB.insertPolygons(polygons)
+	# postgisDB.disconnect()
 
-	hanaDB = hana.Hana()
-	hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-	hanaDB.insertPolygons(polygons)
-	hanaDB.disconnect()
+	# hanaDB = hana.Hana()
+	# if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	# hanaDB.insertPolygons(polygons)
+	# hanaDB.disconnect()
 
-	spatialiteDB = spatialite.Spatialite('benchmark.db')
-	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
-	spatialiteDB.insertPolygons(polygons)
-	spatialiteDB.disconnect()
+	# spatialiteDB = spatialite.Spatialite('benchmark.db')
+	# if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
+	# spatialiteDB.insertPolygons(polygons)
+	# spatialiteDB.disconnect()
 
 def createPoints(areaLength):
 	points = list()
@@ -72,7 +72,7 @@ def createPoints(areaLength):
 		x = random.random() * 2 * areaLength - areaLength
 		y = random.random() * 2 * areaLength - areaLength
 		points.append({'x' : x, 'y': y})
-		if i % 1000 == 999:
+		if i % 10000 == 9999:
 			print "finished: " + str(i+1)
 
 	postgisDB = postgis.Postgis()

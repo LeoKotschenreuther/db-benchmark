@@ -123,7 +123,7 @@ class Spatialite:
 			insert = '''INSERT INTO B_POINTS (ID, X, Y, POINT) VALUES (?, ?, ?, MakePoint(?, ?, 4326))'''
 			self.cursor.execute(insert, (i, point['x'], point['y'], point['x'], point['y']))
 			# self.cursor.execute(insert, (i, point['x'], point['y'], 'POINT(1 2)'))
-			if i % 1000 == 999:
+			if i % 10000 == 9999:
 				print "finished: " + str(i+1)
 				self.connection.commit()
 		self.connection.commit()
