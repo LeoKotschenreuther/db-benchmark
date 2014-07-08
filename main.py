@@ -9,7 +9,7 @@ import math
 numberOfExecutions = 100
 polygonSizes = [10, 100, 1000, 2000]
 areaLength = 100000
-resetTables = False
+resetTables = True
 
 
 def runHana(polygonSize, polygons, areaPoints):
@@ -83,8 +83,8 @@ def printResultsToFile():
 	output.printSummary(results)
 	print('Finished printing results')
 
-dataCreation.createPoints(areaLength)
-# dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
+# dataCreation.createPoints(areaLength)
+dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
 # dataCreation.createLines()
 
 
