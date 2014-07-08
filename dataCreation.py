@@ -36,14 +36,14 @@ def createPolygons(resetTables, sizes, areaLength):
 			while not polygonIsValid:
 				polygon = createPolygon(polygonSize, areaLength)
 				# check whether they intersect:
-				# hanaDB = hana.Hana()
-				# polygonIsValid = hanaDB.isPolygonValid(polygon)
-				# hanaDB.disconnect()
-				postgisDB = postgis.Postgis()
-				polygonIsValid = postgisDB.isPolygonValid(polygon1)
-				postgisDB.disconnect()
+				hanaDB = hana.Hana()
+				polygonIsValid = hanaDB.isPolygonValid(polygon)
+				hanaDB.disconnect()
+				# postgisDB = postgis.Postgis()
+				# polygonIsValid = postgisDB.isPolygonValid(polygon)
+				# postgisDB.disconnect()
 				# spatialiteDB = spatialite.Spatialite(':memory:')
-				# polygonIsValid = spatialiteDB.isPolygonValid(polygon1)
+				# polygonIsValid = spatialiteDB.isPolygonValid(polygon)
 				# spatialiteDB.disconnect()
 			polygons.append(polygon)
 			if (x + i * int(math.ceil(numPolygons / len(sizes)))) % 1000 == 999:
