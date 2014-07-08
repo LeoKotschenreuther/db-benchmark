@@ -2,7 +2,7 @@ from db import mysql, postgis, spatialite, hana
 import random
 import math
 
-numPoints = 100000
+numPoints = 1000000
 numLines = 1000
 numPolygons = 10000
 
@@ -51,15 +51,15 @@ def createPolygons(resetTables, sizes, areaLength):
 
 	print "Created valid Polygons"
 
-	# postgisDB = postgis.Postgis()
-	# postgisDB.dropCreateTable('POLYGONS')
-	# postgisDB.insertPolygons(polygons)
-	# postgisDB.disconnect()
+	postgisDB = postgis.Postgis()
+	postgisDB.dropCreateTable('POLYGONS')
+	postgisDB.insertPolygons(polygons)
+	postgisDB.disconnect()
 
-	# hanaDB = hana.Hana()
-	# hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-	# hanaDB.insertPolygons(polygons)
-	# hanaDB.disconnect()
+	hanaDB = hana.Hana()
+	hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	hanaDB.insertPolygons(polygons)
+	hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
@@ -75,15 +75,15 @@ def createPoints(areaLength):
 		if i % 1000 == 999:
 			print "finished: " + str(i+1)
 
-	# postgisDB = postgis.Postgis()
-	# postgisDB.dropCreateTable('POINTS')
-	# postgisDB.insertPoints(points)
-	# postgisDB.disconnect()
+	postgisDB = postgis.Postgis()
+	postgisDB.dropCreateTable('POINTS')
+	postgisDB.insertPoints(points)
+	postgisDB.disconnect()
 
-	# hanaDB = hana.Hana()
-	# hanaDB.dropCreateTable('BENCHMARK.B_POINTS')
-	# hanaDB.insertPoints(points)
-	# hanaDB.disconnect()
+	hanaDB = hana.Hana()
+	hanaDB.dropCreateTable('BENCHMARK.B_POINTS')
+	hanaDB.insertPoints(points)
+	hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	spatialiteDB.dropCreateTable('B_POINTS')
