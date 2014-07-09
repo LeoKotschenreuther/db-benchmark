@@ -17,11 +17,17 @@ class Postgis:
 		self.connection.close()
 
 	def polygonString(self, polygon):
-		# ST_GeomFromText('Polygon((-0.8 0.7,-0.6 0.7,-0.6 0.4,-0.8 0.4,-0.8 0.7))', 4326)
 		string = "Polygon(("
 		for point in polygon:
 			string += str(point['x']) + " " + str(point['y']) + ","
 		string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))"
+		return string
+
+	def lineString(self, line):
+		string = "Linestring("
+		for point in line:
+			string += str(point['x']) + " " + str(point['y']) + ","
+		string = string[:-1] + ")"
 		return string
 
 	def pointString(self, point):
@@ -47,6 +53,8 @@ class Postgis:
 		createTable = ""
 		if table == 'POLYGONS':
 			createTable = "CREATE TABLE " + table + " (ID integer, size integer, polygon geometry(POLYGON, 4326))"
+		elif table == 'LINES':
+			createTable = "CREATE TABLE " + table + " (ID integer, size integer, line geometry(LINESTRING, 4326))"
 		elif table == 'POINTS':
 			createTable = "CREATE TABLE " + table + " (ID INTEGER, X FLOAT, Y FLOAT, POINT geometry(POINT, 4326))"
 		self.cursor.execute(createTable)
@@ -63,6 +71,17 @@ class Postgis:
 				self.connection.commit()
 		self.connection.commit()
 		print("\tInserted Polygons into polygons table")
+
+	def insertLines(self, lines, offset):
+		for i, line in enumerate(lines):
+			size = len(line)
+			insert = '''INSERT INTO LINES (ID, SIZE, line) VALUES (%s, %s, ST_GeomFromText(%s, 4326))'''
+			self.cursor.execute(insert, (i + offset, size, self.lineString(line)))
+			if i % 1000 == 999:
+				print "finished: " + str(i+1)
+				self.connection.commit()
+		self.connection.commit()
+		print("\tInserted Lines into lines table")
 
 	def removePolygons(self, size):
 		query = "DELETE FROM POLYGONS WHERE SIZE = 500"

@@ -4,18 +4,18 @@ import math
 
 offset = 0
 numPoints = 1000000
-numLines = 1000
+numLines = 100000
 numPolygons = 100000
 
-def createPolygon(numPoints, areaLength):
-	if numPoints < 3:
+def createPolygon(size, areaLength):
+	if size < 3:
 		return False
 
 	points = list()
 	midX = random.random() * 2 * areaLength * 3 / 4 - areaLength * 3.0 / 4.0
 	midY = random.random() * 2 * areaLength * 3 / 4 - areaLength * 3.0 / 4.0
 	step = 2 * math.pi / numPoints
-	for i in range(0, numPoints):
+	for i in range(0, size):
 		distanceMid = random.random() * areaLength / 8.0
 		if distanceMid < areaLength / 8.0 * 0.05: distanceMid = areaLength / 8.0 * 0.05
 		x = midX + math.cos(step*i) * distanceMid
@@ -26,6 +26,27 @@ def createPolygon(numPoints, areaLength):
 		if y < -areaLength : y = -areaLength
 		points.append({'x': x, 'y': y})
 	# print points
+	return points
+
+def createLine(size, areaLength):
+	if size < 2:
+		return False
+
+	points = list()
+	startX = random.random() * 2 * areaLength * 3 / 4 - areaLength
+	startY = random.random() * 2 * areaLength * 3 / 4 - areaLength
+	points.append({'x': startX, 'y': startY})
+	endX = random.random() * 2 * areaLength * 3 / 4 - areaLength
+	endY = random.random() * 2 * areaLength * 3 / 4 - areaLength
+	dx = endX - startX
+	dy = endY - startY
+	stepX = dx / (size - 1)
+	stepY = dy / (size - 1)
+	for i in range(0, size - 2):
+		x = startX + (i + 1) * stepX + random.random() * 2 * stepX - stepX
+		y = startY + (i + 1) * stepY + random.random() * 2 * stepY - stepY
+		points.append({'x': x, 'y': y})
+	points.append({'x': endX, 'y': endY})
 	return points
 
 def createPolygons(resetTables, sizes, areaLength):
@@ -65,6 +86,34 @@ def createPolygons(resetTables, sizes, areaLength):
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
 	spatialiteDB.insertPolygons(polygons, offset)
+	spatialiteDB.disconnect()
+
+	# print "Finished: " + str((a + 1) * num * 100 / numPolygons) + "%"
+
+def createLines(resetTables, sizes, areaLength):
+	lines = list()
+	for i, lineSize in enumerate(sizes):
+		for x in range(0, int(math.ceil(numLines / len(sizes)))):
+			line = createLine(lineSize, areaLength)
+			lines.append(line)
+			if (x + i * int(math.ceil(numLines / len(sizes)))) % 1000 == 999:
+				print "finished: " + str(x + i * int(math.ceil(1000 / len(sizes))) + 1)
+
+	print "Created valid Lines"
+
+	postgisDB = postgis.Postgis()
+	if resetTables: postgisDB.dropCreateTable('LINES')
+	postgisDB.insertLines(lines, offset)
+	postgisDB.disconnect()
+
+	hanaDB = hana.Hana()
+	if resetTables: hanaDB.dropCreateTable('BENCHMARK.LINES')
+	hanaDB.insertLines(lines, offset)
+	hanaDB.disconnect()
+
+	spatialiteDB = spatialite.Spatialite('benchmark.db')
+	if resetTables: spatialiteDB.dropCreateTable('LINES')
+	spatialiteDB.insertLines(lines, offset)
 	spatialiteDB.disconnect()
 
 	# print "Finished: " + str((a + 1) * num * 100 / numPolygons) + "%"

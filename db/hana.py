@@ -22,18 +22,25 @@ class Hana:
             'ngdbc.jar')
 
     def disconnect(self):
-        self.con.close()
+        self.connection.close()
 
     def reconnect(self):
         self.disconnect()
         self.connection = self.connect()
+        self.cursor = self.connection.cursor()
 
     def polygonString(self, polygon):
-        # NEW ST_POLYGON('Polygon((-0.8 0.7, -0.6 0.7, -0.6 0.4, -0.8 0.4, -0.8 0.7))')
         string = "Polygon(("
         for point in polygon:
             string += str(point['x']) + " " + str(point['y']) + ","
         string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))"
+        return string
+
+    def lineString(self, line):
+        string = "Linestring("
+        for point in line:
+            string += str(point['x']) + " " + str(point['y']) + ","
+        string = string[:-1] + ")"
         return string
 
     def pointString(self, point):
@@ -72,6 +79,8 @@ class Hana:
         createTable = ""
         if table == 'BENCHMARK.POLYGONS':
             createTable = "CREATE COLUMN TABLE BENCHMARK.POLYGONS (ID INTEGER, size INTEGER, POLYGON ST_GEOMETRY)"
+        elif table == 'BENCHMARK.LINES':
+            createTable = "CREATE COLUMN TABLE BENCHMARK.LINES (ID INTEGER, size INTEGER, line ST_GEOMETRY)"
         elif table == 'BENCHMARK.B_POINTS':
             createTable = "CREATE COLUMN TABLE BENCHMARK.B_POINTS (ID INTEGER, X FLOAT, Y FLOAT, POINT ST_POINT)"
         self.cursor.execute(createTable)
@@ -88,6 +97,17 @@ class Hana:
                 print "finished: " + str(i+1)
         self.reconnect()
         print("\tInserted Polygons into polygons table")
+
+    def insertLines(self, lines, offset):
+        for i, line in enumerate(lines):
+            size = len(line)
+            insert = '''INSERT INTO BENCHMARK.LINES (ID, SIZE, line) VALUES (?, ?, New ST_LINESTRING(?))'''
+            self.cursor.execute(insert, (i + offset, size, self.lineString(line)))
+            if i % 1000 == 999:
+                self.reconnect()
+                print "finished: " + str(i+1)
+        self.reconnect()
+        print("\tInserted Lines into lines table")
 
     def removePolygons(self, size):
         query = "DELETE FROM BENCHMARK.POLYGONS WHERE SIZE = " + str(size)

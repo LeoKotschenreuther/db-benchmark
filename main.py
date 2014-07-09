@@ -8,6 +8,7 @@ import math
 
 numberOfExecutions = 100
 polygonSizes = [10]
+lineSizes = [10]
 areaLength = 100000
 resetTables = True
 
@@ -86,8 +87,8 @@ def printResultsToFile():
 # dataCreation.removeData(500)
 
 # dataCreation.createPoints(areaLength)
-dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
-# dataCreation.createLines()
+# dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
+dataCreation.createLines(resetTables, lineSizes, areaLength)
 
 
 # runSoccerAnalyticsWorkload()

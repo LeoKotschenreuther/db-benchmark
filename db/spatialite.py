@@ -74,6 +74,9 @@ class Spatialite:
 		if table == 'POLYGONS':
 			createTable = "CREATE TABLE POLYGONS (ID integer, size integer)"
 			addColumn = "SELECT AddGeometryColumn ('POLYGONS', 'polygon', 4326, 'POLYGON', 2)"
+		elif table == 'LINES':
+			createTable = "CREATE TABLE LINES (ID INTEGER, size INTEGER)"
+			addColumn = "SELECT AddGeometryColumn ('LINES', 'line', 4326, 'LINESTRING', 2)"
 		elif table == 'B_POINTS':
 			createTable = "CREATE TABLE B_POINTS (ID INTEGER, X FLOAT, Y FLOAT)"
 			addColumn = "SELECT AddGeometryColumn ('B_POINTS', 'point', 4326, 'POINT', 2)"
@@ -84,12 +87,19 @@ class Spatialite:
 		print("\tCreated Table")
 
 	def polygonString(self, polygon):
-		# PolygonFromText('Polygon((-0.8 0.7,-0.6 0.7,-0.6 0.4,-0.8 0.4,-0.8 0.7))', 4326)
 		string = "Polygon(("
 		for point in polygon:
 			string += str(point['x']) + " " + str(point['y']) + ","
 		string += str(polygon[0]['x']) + " " + str(polygon[0]['y']) + "))"
 		return string
+
+	def lineString(self, line):
+		string = "LineString("
+		for point in line:
+			string += str(point['x']) + " " + str(point['y']) + ","
+		string = string[:-1] + ")"
+		return string
+
 
 	def isPolygonValid(self, polygon):
 		try:
@@ -111,6 +121,17 @@ class Spatialite:
 			size = len(polygon)
 			insert = '''INSERT INTO POLYGONS (ID, size, polygon) VALUES (?, ?, PolygonFromText(?, 4326))'''
 			self.cursor.execute(insert, (i+offset, size, self.polygonString(polygon)))
+			if i % 1000 == 999:
+				print "finished: " + str(i+1)
+				self.connection.commit()
+		self.connection.commit()
+		print("\tInserted Polygons into polygons table")
+
+	def insertLines(self, lines, offset):
+		for i, line in enumerate(lines):
+			size = len(line)
+			insert = '''INSERT INTO LINES (ID, size, line) VALUES (?, ?, LineStringFromText(?, 4326))'''
+			self.cursor.execute(insert, (i+offset, size, self.lineString(line)))
 			if i % 1000 == 999:
 				print "finished: " + str(i+1)
 				self.connection.commit()
