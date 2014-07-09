@@ -78,6 +78,7 @@ class Hana:
         for i, polygon in enumerate(polygons):
             size = len(polygon)
             insert = '''INSERT INTO BENCHMARK.POLYGONS (ID, SIZE, polygon) VALUES (?, ?, New ST_POLYGON(?))'''
+            # print self.polygonString(polygon)
             self.cursor.execute(insert, (i, size, self.polygonString(polygon)))
             if i % 100 == 99:
                 print "finished: " + str(i+1)

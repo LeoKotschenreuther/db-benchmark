@@ -4,7 +4,7 @@ import math
 
 numPoints = 1000000
 numLines = 1000
-numPolygons = 10000
+numPolygons = 100000
 
 def createPolygon(numPoints, areaLength):
 	if numPoints < 3:
@@ -52,17 +52,17 @@ def createPolygons(resetTables, sizes, areaLength):
 	print "Created valid Polygons"
 
 	postgisDB = postgis.Postgis()
-	if resetTables and a == 0: postgisDB.dropCreateTable('POLYGONS')
+	if resetTables: postgisDB.dropCreateTable('POLYGONS')
 	postgisDB.insertPolygons(polygons)
 	postgisDB.disconnect()
 
 	hanaDB = hana.Hana()
-	if resetTables and a == 0: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
 	hanaDB.insertPolygons(polygons)
 	hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
-	if resetTables and a == 0: spatialiteDB.dropCreateTable('POLYGONS')
+	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
 	spatialiteDB.insertPolygons(polygons)
 	spatialiteDB.disconnect()
 

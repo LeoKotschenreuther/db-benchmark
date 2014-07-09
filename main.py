@@ -7,7 +7,7 @@ import random
 import math
 
 numberOfExecutions = 100
-polygonSizes = [10, 50, 200, 1000]
+polygonSizes = [10]
 areaLength = 100000
 resetTables = True
 
