@@ -2,10 +2,10 @@ from db import mysql, postgis, spatialite, hana
 import random
 import math
 
-offset = 100000
+offset = 0
 numPoints = 1000000
 numLines = 1000
-numPolygons = 50000
+numPolygons = 100000
 
 def createPolygon(numPoints, areaLength):
 	if numPoints < 3:
@@ -92,3 +92,12 @@ def createPoints(areaLength):
 	spatialiteDB.dropCreateTable('B_POINTS')
 	spatialiteDB.insertPoints(points)
 	spatialiteDB.disconnect()
+
+def removeData(size):
+	postgisDB = postgis.Postgis()
+	postgisDB.removePolygons(size)
+	postgisDB.disconnect()
+
+	# hanaDB = hana.Hana()
+	# hanaDB.removePolygons(size)
+	# hanaDB.disconnect()

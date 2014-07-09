@@ -64,6 +64,12 @@ class Postgis:
 		self.connection.commit()
 		print("\tInserted Polygons into polygons table")
 
+	def removePolygons(self, size):
+		query = "DELETE FROM POLYGONS WHERE SIZE = 500"
+		self.cursor.execute(query)
+		self.connection.commit()
+
+
 	def insertPoints(self, points):
 		for i, point in enumerate(points):
 			# print self.pointString(point)

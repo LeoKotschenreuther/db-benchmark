@@ -81,8 +81,14 @@ class Hana:
             # print self.polygonString(polygon)
             self.cursor.execute(insert, (i + offset, size, self.polygonString(polygon)))
             if i % 1000 == 999:
+                self.cursor.commit()
                 print "finished: " + str(i+1)
+        self.cursur.commit()
         print("\tInserted Polygons into polygons table")
+
+    def removePolygons(self, size):
+        query = "DELETE FROM BENCHMARK.POLYGONS WHERE SIZE = " + str(size)
+        self.cursor.execute(query)
 
     def insertPoints(self, points):
         for i, point in enumerate(points):

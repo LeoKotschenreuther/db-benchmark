@@ -7,9 +7,9 @@ import random
 import math
 
 numberOfExecutions = 100
-polygonSizes = [50]
+polygonSizes = [10]
 areaLength = 100000
-resetTables = False
+resetTables = True
 
 
 def runHana(polygonSize, polygons, areaPoints):
@@ -83,6 +83,8 @@ def printResultsToFile():
 	output.printSummary(results)
 	print('Finished printing results')
 
+# dataCreation.removeData(500)
+
 # dataCreation.createPoints(areaLength)
 dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
 # dataCreation.createLines()
@@ -91,6 +93,9 @@ dataCreation.createPolygons(resetTables, polygonSizes, areaLength)
 # runSoccerAnalyticsWorkload()
 # run9IntersectionWorkload()
 
-# db = spatialite.Spatialite(':memory:')
-# db.setUpDB(False)
+# db = postgis.Postgis()
+# db.cursor.execute("SELECT SIZE, COUNT(SIZE) FROM POLYGONS GROUP BY SIZE")
+# # result = db.cursor.fetchall()
+# for row in db.cursor:
+# 	print row
 # db.disconnect()
