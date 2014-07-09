@@ -11,8 +11,8 @@ class Hana:
         self.PASSWORD = hanaCredentials.pw()
         self.PORT = hanaCredentials.port()
         self.USER = hanaCredentials.user()
-        self.con = self.connect()
-        self.cursor = self.con.cursor()
+        self.connection = self.connect()
+        self.cursor = self.connection.cursor()
 
     def connect(self):
         url = 'jdbc:sap://%s:%s' %(self.HOST, self.PORT)
@@ -26,7 +26,7 @@ class Hana:
 
     def reconnect(self):
         self.disconnect()
-        self.connect()
+        self.connection = self.connect()
 
     def polygonString(self, polygon):
         # NEW ST_POLYGON('Polygon((-0.8 0.7, -0.6 0.7, -0.6 0.4, -0.8 0.4, -0.8 0.7))')
