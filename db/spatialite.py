@@ -61,11 +61,11 @@ class Spatialite:
 		# 	print result
 
 	def dropCreateTable(self, table):
-		try:
-			init = 'SELECT InitSpatialMetadata()'
-			self.cursor.execute(init)
-		except:
-			print "\tDid already run InitSpatialMetadata"
+		# try:
+		# 	init = 'SELECT InitSpatialMetadata()'
+		# 	self.cursor.execute(init)
+		# except:
+		# 	print "\tDid already run InitSpatialMetadata"
 		dropTable = "DROP TABLE IF EXISTS " + table
 		self.cursor.execute(dropTable)
 		print("\tDropped Table")
@@ -106,11 +106,11 @@ class Spatialite:
 			if row[0] == 1: isValid = True
 		return isValid
 
-	def insertPolygons(self, polygons):
+	def insertPolygons(self, polygons, offset):
 		for i, polygon in enumerate(polygons):
 			size = len(polygon)
 			insert = '''INSERT INTO POLYGONS (ID, size, polygon) VALUES (?, ?, PolygonFromText(?, 4326))'''
-			self.cursor.execute(insert, (i, size, self.polygonString(polygon)))
+			self.cursor.execute(insert, (i+offset, size, self.polygonString(polygon)))
 			if i % 1000 == 999:
 				print "finished: " + str(i+1)
 				self.connection.commit()

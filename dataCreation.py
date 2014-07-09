@@ -2,9 +2,10 @@ from db import mysql, postgis, spatialite, hana
 import random
 import math
 
+offset = 100000
 numPoints = 1000000
 numLines = 1000
-numPolygons = 100000
+numPolygons = 50000
 
 def createPolygon(numPoints, areaLength):
 	if numPoints < 3:
@@ -53,17 +54,17 @@ def createPolygons(resetTables, sizes, areaLength):
 
 	postgisDB = postgis.Postgis()
 	if resetTables: postgisDB.dropCreateTable('POLYGONS')
-	postgisDB.insertPolygons(polygons)
+	postgisDB.insertPolygons(polygons, offset)
 	postgisDB.disconnect()
 
 	hanaDB = hana.Hana()
 	if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-	hanaDB.insertPolygons(polygons)
+	hanaDB.insertPolygons(polygons, offset)
 	hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
-	spatialiteDB.insertPolygons(polygons)
+	spatialiteDB.insertPolygons(polygons, offset)
 	spatialiteDB.disconnect()
 
 	# print "Finished: " + str((a + 1) * num * 100 / numPolygons) + "%"

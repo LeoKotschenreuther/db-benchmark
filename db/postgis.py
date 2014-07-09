@@ -53,11 +53,11 @@ class Postgis:
 		self.connection.commit()
 		print("\tCreated Table")
 
-	def insertPolygons(self, polygons):
+	def insertPolygons(self, polygons, offset):
 		for i, polygon in enumerate(polygons):
 			size = len(polygon)
 			insert = '''INSERT INTO POLYGONS (ID, SIZE, polygon) VALUES (%s, %s, ST_GeomFromText(%s, 4326))'''
-			self.cursor.execute(insert, (i, size, self.polygonString(polygon)))
+			self.cursor.execute(insert, (i + offset, size, self.polygonString(polygon)))
 			if i % 1000 == 999:
 				print "finished: " + str(i+1)
 				self.connection.commit()
