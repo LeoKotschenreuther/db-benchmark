@@ -21,9 +21,12 @@ class Hana:
             [url, self.USER, self.PASSWORD],
             'ngdbc.jar')
 
-
     def disconnect(self):
         self.con.close()
+
+    def reconnect(self):
+        self.disconnect()
+        self.connect()
 
     def polygonString(self, polygon):
         # NEW ST_POLYGON('Polygon((-0.8 0.7, -0.6 0.7, -0.6 0.4, -0.8 0.4, -0.8 0.7))')
@@ -81,9 +84,9 @@ class Hana:
             # print self.polygonString(polygon)
             self.cursor.execute(insert, (i + offset, size, self.polygonString(polygon)))
             if i % 1000 == 999:
-                self.cursor.commit()
+                self.reconnect()
                 print "finished: " + str(i+1)
-        self.cursur.commit()
+        self.reconnect()
         print("\tInserted Polygons into polygons table")
 
     def removePolygons(self, size):
