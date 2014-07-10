@@ -2,10 +2,27 @@ from db import mysql, postgis, spatialite, hana
 import random
 import math
 
+resetTables = True
 offset = 0
+polygonSizes = [10]
+lineSizes = [10]
 numPoints = 1000000
 numLines = 100000
 numPolygons = 100000
+
+def createData(areaLength):
+	# removeData(500)
+
+	createPoints(areaLength)
+	createPolygons(resetTables, polygonSizes, areaLength)
+	createLines(resetTables, lineSizes, areaLength)
+
+	# db = postgis.Postgis()
+	# db.cursor.execute("SELECT SIZE, COUNT(SIZE) FROM LINES GROUP BY SIZE")
+#	result = db.cursor.fetchall()
+# 	for row in result:
+# 		print row
+# 	db.disconnect()
 
 def createPolygon(size, areaLength):
 	if size < 3:
@@ -144,7 +161,7 @@ def createPoints(areaLength):
 
 def removeData(size):
 	postgisDB = postgis.Postgis()
-	postgisDB.removePolygons(size)
+	postgisDB.removeLines(size)
 	postgisDB.disconnect()
 
 	# hanaDB = hana.Hana()

@@ -83,8 +83,8 @@ class Postgis:
 		self.connection.commit()
 		print("\tInserted Lines into lines table")
 
-	def removePolygons(self, size):
-		query = "DELETE FROM POLYGONS WHERE SIZE = 500"
+	def removeLines(self, size):
+		query = "DELETE FROM LINES WHERE SIZE = 500"
 		self.cursor.execute(query)
 		self.connection.commit()
 
@@ -114,12 +114,6 @@ class Postgis:
 		for row in rows:
 			flag = row[0]
 		return flag
-
-	def runQueriesPoly(self, queries, numberOfExecutions, polygonSize):
-		print '\tPolygonsize: ' + str(polygonSize)
-		results = self.runQueries(queries, numberOfExecutions)
-		results['polygonSize'] = polygonSize
-		return results
 
 	def runQueries(self, queries, numberOfExecutions):
 		results = {'database': 'postgis', 'queries': list()}

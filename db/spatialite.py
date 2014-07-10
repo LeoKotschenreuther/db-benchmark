@@ -2,6 +2,7 @@ import csv
 import time
 from pyspatialite import dbapi2 as db
 import math
+from StringIO import StringIO
 
 class Spatialite:
 
@@ -16,49 +17,38 @@ class Spatialite:
 	def disconnect(self):
 		self.connection.close()
 
-	def setUpDB(self, enableIndex):
+	def loadDiskData(self, diskFile):
+		init = 'SELECT InitSpatialMetadata()'
+		self.cursor.execute(init)
+		attachDB = "ATTACH DATABASE '" + diskFile + "' AS 'benchmark'"
+		self.cursor.execute(attachDB)
 
-		try:
-			init = 'SELECT InitSpatialMetadata()'
-			self.cursor.execute(init)
-		except:
-			print "Did already run InitSpatialMetadata"
+	def setUpSoccerData(self, enableIndex):
+		init = 'SELECT InitSpatialMetadata()'
+		self.cursor.execute(init)
 
-		# createTable = "CREATE TABLE test (x INTEGER, y INTEGER)"
-		# createTable = "CREATE TABLE points (id INTEGER, x FLOAT, y FLOAT)"
-		# self.cursor.execute(createTable)
-		# # addPointColumn = "SELECT AddGeometryColumn ('test', 'point', 4326, 'POINT', 2)"
-		# addPointColumn = "SELECT AddGeometryColumn ('points', 'point', 4326, 'POINT', 2)"
-		# self.cursor.execute(addPointColumn)
+		createTable = "CREATE TABLE test (x INTEGER, y INTEGER)"
+		self.cursor.execute(createTable)
+		addPointColumn = "SELECT AddGeometryColumn ('test', 'point', 4326, 'POINT', 2)"
+		self.cursor.execute(addPointColumn)
 
-		# if enableIndex:
-		# 	createIndex = "SELECT CreateSpatialIndex('test', 'point')"
-		# 	self.cursor.execute(createIndex)
-		# 	print "created Index"
+		if enableIndex:
+			createIndex = "SELECT CreateSpatialIndex('test', 'point')"
+			self.cursor.execute(createIndex)
+			print "created Index"
 
-		# print "Table is created!"
+		print "Table is created!"
 
-		# with open('data.csv','rb') as csvfile:
-		# 	reader = csv.reader(csvfile)
-		# 	to_db = [(i[0], i[1]) for i in reader]
+		with open('data.csv','rb') as csvfile:
+			reader = csv.reader(csvfile)
+			to_db = [(i[0], i[1]) for i in reader]
 
-		# with open('points.csv','rb') as csvfile:
-		# 	reader = csv.reader(csvfile)
-		# 	to_db = [(i[0], i[1], i[2], i[3]) for i in reader]
-
-		# self.cursor.executemany("INSERT INTO test (x, y) VALUES (?, ?);", to_db)
-		# self.cursor.executemany("INSERT INTO POINTS (id, x, y, point) VALUES (?, ?, ?, ?);", to_db)
-		# self.connection.commit()
-		# print "Inserted points into the table"
-		# self.cursor.execute("UPDATE test set point = MakePoint(x, y, 4326)")
-		# self.connection.commit()
-
-		# print "Did set up the db"
-
-		# query = "SELECT COUNT(*) FROM POINTS"
-		# result = self.cursor.execute(query)
-		# for row in result:
-		# 	print result
+		self.cursor.executemany("INSERT INTO test (x, y) VALUES (?, ?);", to_db)
+		self.connection.commit()
+		print "Inserted points into the table"
+		self.cursor.execute("UPDATE test set point = MakePoint(x, y, 4326)")
+		self.connection.commit()
+		print "Did set up the db"
 
 	def dropCreateTable(self, table):
 		# try:
@@ -136,7 +126,7 @@ class Spatialite:
 				print "finished: " + str(i+1)
 				self.connection.commit()
 		self.connection.commit()
-		print("\tInserted Polygons into polygons table")
+		print("\tInserted Lines into lines table")
 
 	def insertPoints(self, points):
 		for i, point in enumerate(points):
@@ -163,12 +153,6 @@ class Spatialite:
 			# print row[0]
 			if row[0] == 1: flag = True
 		return flag
-
-	def runQueriesPoly(self, queries, numberOfExecutions, polygonSize):
-		print '\tPolygonsize: ' + str(polygonSize)
-		results = self.runQueries(queries, numberOfExecutions)
-		results['polygonSize'] = polygonSize
-		return results
 
 	def runQueries(self, queries, numberOfExecutions):
 		results = {'database': 'spatialite  - ' + self.db, 'queries': list()}

@@ -123,12 +123,6 @@ class Hana:
                 print "finished: " + str(i+1)
         print("\tInserted Points into Points table")
 
-    def runQueriesPoly(self, queries, numberOfExecutions, polygonSize):
-        print '\tPolygonsize: ' + str(polygonSize)
-        results = self.runQueries(queries, numberOfExecutions)
-        results['polygonSize'] = polygonSize
-        return results
-
     def runQueries(self, queries, numberOfExecutions):
         results = {'database': 'hana', 'queries': list()}
         allQueries = len(queries) * numberOfExecutions
@@ -174,7 +168,8 @@ class Hana:
             try:
                 self.cursor.execute(string)
             except:
-                print "Error during execution of query" + query
+                print "Error during execution of query"
+                print query
                 return
             out.write(str(time.time()-start)+'\t' + resultname + '\n')
         self.cursor.execute(''' {CALL PLANVIZ_ACTION(?,?)} ''', (401, queryid)) # get plan after execution
