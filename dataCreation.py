@@ -3,26 +3,19 @@ import random
 import math
 
 resetTables = True
-offset = 0
-polygonSizes = [10]
+offset = 175000
+polygonSizes = [500]
 lineSizes = [10]
 numPoints = 1000000
 numLines = 100000
-numPolygons = 100000
+numPolygons = 7500
 
 def createData(areaLength):
 	# removeData(500)
 
-	createPoints(areaLength)
+	# createPoints(areaLength)
 	createPolygons(resetTables, polygonSizes, areaLength)
-	createLines(resetTables, lineSizes, areaLength)
-
-	# db = postgis.Postgis()
-	# db.cursor.execute("SELECT SIZE, COUNT(SIZE) FROM LINES GROUP BY SIZE")
-#	result = db.cursor.fetchall()
-# 	for row in result:
-# 		print row
-# 	db.disconnect()
+	# createLines(resetTables, lineSizes, areaLength)
 
 def createPolygon(size, areaLength):
 	if size < 3:
@@ -31,7 +24,7 @@ def createPolygon(size, areaLength):
 	points = list()
 	midX = random.random() * 2 * areaLength * 3 / 4 - areaLength * 3.0 / 4.0
 	midY = random.random() * 2 * areaLength * 3 / 4 - areaLength * 3.0 / 4.0
-	step = 2 * math.pi / numPoints
+	step = 2 * math.pi / size
 	for i in range(0, size):
 		distanceMid = random.random() * areaLength / 8.0
 		if distanceMid < areaLength / 8.0 * 0.05: distanceMid = areaLength / 8.0 * 0.05
