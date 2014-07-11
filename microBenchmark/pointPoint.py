@@ -4,9 +4,9 @@ import output
 def run(numberOfExecutions, areaLength):
 	results = list()
 
-	results.append(runPostgis(numberOfExecutions))
+	# results.append(runPostgis(numberOfExecutions))
 	results.append(runHana(numberOfExecutions))
-	results.append(runSpatialiteMain(numberOfExecutions))
+	# results.append(runSpatialiteMain(numberOfExecutions))
 	
 	output.printSummary(results)
 	return results
@@ -41,24 +41,24 @@ def runSpatialiteMain(numberOfExecutions):
 
 def postgisqueries():
 	return [
-		"SELECT ONE.ID, TWO.ID, one.POINT FROM POINTS one JOIN POINTS two ON ST_Equals(one.point, two.point) = True WHERE ONE.ID < TWO.ID",
-		"SELECT ONE.ID, TWO.ID, one.X, one.Y FROM POINTS one JOIN POINTS two ON one.X = two.X and one.Y = two.y WHERE ONE.ID < TWO.ID",
-		"SELECT one.ID, two.ID, one.POINT, two.POINT FROM POINTS one JOIN POINTS two ON ST_DWithin(one.POINT, two.POINT, 20) = True WHERE one.ID < TWO.ID",
-		"SELECT one.ID, two.ID, one.X, one.Y, two.X, two.Y FROM POINTS one JOIN POINTS two ON (two.x - one.x) * (two.x - one.x) + (two.y - one.y) * (two.y - one.y) <= 20 * 20 WHERE one.ID < TWO.ID"
+		"SELECT COUNT(*) FROM POINTS one JOIN POINTS two ON ST_Equals(one.point, two.point) = True WHERE ONE.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM POINTS one JOIN POINTS two ON one.X = two.X and one.Y = two.y WHERE ONE.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM POINTS one JOIN POINTS two ON ST_DWithin(one.POINT, two.POINT, 20) = True WHERE one.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM POINTS one JOIN POINTS two ON (two.x - one.x) * (two.x - one.x) + (two.y - one.y) * (two.y - one.y) <= 20 * 20 WHERE one.ID < TWO.ID AND TWO.ID < 1000"
 		]
 
 def hanaqueries():
 	return [
-		"SELECT ONE.ID, TWO.ID, one.POINT FROM BENCHMARK.B_POINTS one JOIN BENCHMARK.B_POINTS two ON one.point.ST_Equals(two.point) = 1 WHERE ONE.ID < TWO.ID",
-		"SELECT ONE.ID, TWO.ID, one.X, one.Y FROM BENCHMARK.B_POINTS one JOIN BENCHMARK.B_POINTS two ON one.X = two.X and one.Y = two.y WHERE ONE.ID < TWO.ID",
-		"SELECT one.ID, two.ID, one.POINT, two.POINT FROM BENCHMARK.B_POINTS one JOIN BENCHMARK.B_POINTS two ON one.point.ST_WithinDistance(two.POINT, 20) = 1 WHERE one.ID < TWO.ID",
-		"SELECT one.ID, two.ID, one.X, one.Y, two.X, two.Y FROM BENCHMARK.B_POINTS one JOIN BENCHMARK.B_POINTS two ON (two.x - one.x) * (two.x - one.x) + (two.y - one.y) * (two.y - one.y) <= 20 * 20 WHERE one.ID < TWO.ID"
+		"SELECT COUNT(*) FROM BENCHMARK.B_POINTS one JOIN BENCHMARK.B_POINTS two ON one.point.ST_Equals(two.point) = 1 WHERE ONE.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM BENCHMARK.B_POINTS one JOIN BENCHMARK.B_POINTS two ON one.X = two.X and one.Y = two.y WHERE ONE.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM BENCHMARK.B_POINTS one JOIN BENCHMARK.B_POINTS two ON one.point.ST_WithinDistance(two.POINT, 20) = 1 WHERE one.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM BENCHMARK.B_POINTS one JOIN BENCHMARK.B_POINTS two ON (two.x - one.x) * (two.x - one.x) + (two.y - one.y) * (two.y - one.y) <= 20 * 20 WHERE one.ID < TWO.ID AND TWO.ID < 1000"
 		]
 
 def spatialitequeries():
 	return [
-		"SELECT ONE.ID, TWO.ID, one.POINT FROM B_POINTS one JOIN B_POINTS two ON Equals(one.point, two.point) = 1 WHERE ONE.ID < TWO.ID",
-		"SELECT ONE.ID, TWO.ID, one.X, one.Y FROM B_POINTS one JOIN B_POINTS two ON one.X = two.X and one.Y = two.y WHERE ONE.ID < TWO.ID",
-		"SELECT one.ID, two.ID, one.POINT, two.POINT FROM B_POINTS one JOIN B_POINTS two ON Distance(ONE.POINT, two.POINT) <= 20 WHERE one.ID < TWO.ID",
-		"SELECT one.ID, two.ID, one.X, one.Y, two.X, two.Y FROM B_POINTS one JOIN B_POINTS two ON (two.x - one.x) * (two.x - one.x) + (two.y - one.y) * (two.y - one.y) <= 20 * 20 WHERE one.ID < TWO.ID"
+		"SELECT COUNT(*) FROM B_POINTS one JOIN B_POINTS two ON Equals(one.point, two.point) = 1 WHERE ONE.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM B_POINTS one JOIN B_POINTS two ON one.X = two.X and one.Y = two.y WHERE ONE.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM B_POINTS one JOIN B_POINTS two ON Distance(ONE.POINT, two.POINT) <= 20 WHERE one.ID < TWO.ID AND TWO.ID < 1000",
+		"SELECT COUNT(*) FROM B_POINTS one JOIN B_POINTS two ON (two.x - one.x) * (two.x - one.x) + (two.y - one.y) * (two.y - one.y) <= 20 * 20 WHERE one.ID < TWO.ID AND TWO.ID < 1000"
 		]
