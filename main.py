@@ -12,13 +12,13 @@ areaLength = 100000
 
 results = list()
 
-# dataCreation.createData(areaLength)
+dataCreation.createData(areaLength)
 
-results = microBenchmark.run(numberOfExecutions, areaLength)
+# results = microBenchmark.run(numberOfExecutions, areaLength)
 # results = macroBenchmark.run(numberOfExecutions)
 
 print('Start printing results')
-output.printSummary(results)
+# output.printSummary(results)
 print('Finished printing results')
 
 # db = postgis.Postgis()
