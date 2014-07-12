@@ -6,7 +6,7 @@ resetTables = True
 offset = 0
 polygonSizes = [500]
 lineSizes = [10]
-numPoints = 100000
+numPoints = 5000
 numLines = 100000
 numPolygons = 7500
 
@@ -138,23 +138,23 @@ def createPoints(areaLength):
 		x = random.random() * 2 * areaLength - areaLength
 		y = random.random() * 2 * areaLength - areaLength
 		points.append({'x' : x, 'y': y})
-		if i % 10000 == 9999:
+		if i % 1000 == 999:
 			print "finished: " + str(i+1)
 
-	postgisDB = postgis.Postgis()
-	postgisDB.dropCreateTable('POINTS')
-	postgisDB.insertPoints(points)
-	postgisDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# postgisDB.dropCreateTable('POINTS')
+	# postgisDB.insertPoints(points)
+	# postgisDB.disconnect()
 
 	hanaDB = hana.Hana()
 	hanaDB.dropCreateTable('BENCHMARK.B_POINTS')
 	hanaDB.insertPoints(points)
 	hanaDB.disconnect()
 
-	spatialiteDB = spatialite.Spatialite('benchmark.db')
-	spatialiteDB.dropCreateTable('B_POINTS')
-	spatialiteDB.insertPoints(points)
-	spatialiteDB.disconnect()
+	# spatialiteDB = spatialite.Spatialite('benchmark.db')
+	# spatialiteDB.dropCreateTable('B_POINTS')
+	# spatialiteDB.insertPoints(points)
+	# spatialiteDB.disconnect()
 
 def removeData(size):
 	postgisDB = postgis.Postgis()

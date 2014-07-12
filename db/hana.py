@@ -119,7 +119,7 @@ class Hana:
             insert = '''INSERT INTO BENCHMARK.B_POINTS (ID, X, Y, POINT) VALUES (?, ?, ?, NEW ST_POINT(?))'''
             self.cursor.execute(insert, (i, point['x'], point['y'], self.pointString(point)))
             # self.cursor.execute(insert, (i, point['x'], point['y'], 'POINT(1 2)'))
-            if i % 10000 == 9999:
+            if i % 1000 == 999:
                 print "finished: " + str(i+1)
         print("\tInserted Points into Points table")
 

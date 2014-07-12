@@ -8,17 +8,19 @@ import math
 import time
 
 numberOfExecutions = 1
-areaLength = 100000
+areaLength = 10000
 
 results = list()
 
+start = time.time()
 dataCreation.createData(areaLength)
-
 # results = microBenchmark.run(numberOfExecutions, areaLength)
+end = time.time()
+print (end - start)
 # results = macroBenchmark.run(numberOfExecutions)
 
 print('Start printing results')
-# output.printSummary(results)
+# output.print9ISummary(results)
 print('Finished printing results')
 
 # db = postgis.Postgis()
