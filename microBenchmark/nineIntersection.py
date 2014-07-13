@@ -16,7 +16,7 @@ def run(numberOfExecutions, areaLength):
 	results.append(runHana(numberOfExecutions, areaPoints))
 	results.append(runSpatialiteMain(numberOfExecutions, areaPoints))
 	
-	output.print9ISummary(results)
+	# output.print9ISummary(results)
 	return results
 
 def runHana(numberOfExecutions, areaPoints):

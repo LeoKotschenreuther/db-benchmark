@@ -5,7 +5,7 @@ import math
 resetTables = True
 offset = 0
 polygonSizes = [10]
-lineSizes = [10]
+lineSizes = [10, 20, 40, 60, 80, 100, 200, 400, 600, 800]
 numPoints = 5000
 numLines = 5000
 numPolygons = 5000
@@ -13,8 +13,8 @@ numPolygons = 5000
 def createData(areaLength):
 	# removeData(500)
 
-	createPoints(areaLength)
-	createPolygons(resetTables, polygonSizes, areaLength)
+	# createPoints(areaLength)
+	# createPolygons(resetTables, polygonSizes, areaLength)
 	createLines(resetTables, lineSizes, areaLength)
 
 def createPolygon(size, areaLength):
@@ -83,15 +83,15 @@ def createPolygons(resetTables, sizes, areaLength):
 
 	print "Created valid Polygons"
 
-	postgisDB = postgis.Postgis()
-	if resetTables: postgisDB.dropCreateTable('POLYGONS')
-	postgisDB.insertPolygons(polygons, offset)
-	postgisDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# if resetTables: postgisDB.dropCreateTable('POLYGONS')
+	# postgisDB.insertPolygons(polygons, offset)
+	# postgisDB.disconnect()
 
-	hanaDB = hana.Hana()
-	if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-	hanaDB.insertPolygons(polygons, offset)
-	hanaDB.disconnect()
+	# hanaDB = hana.Hana()
+	# if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	# hanaDB.insertPolygons(polygons, offset)
+	# hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
@@ -111,15 +111,15 @@ def createLines(resetTables, sizes, areaLength):
 
 	print "Created valid Lines"
 
-	postgisDB = postgis.Postgis()
-	if resetTables: postgisDB.dropCreateTable('LINES')
-	postgisDB.insertLines(lines, offset)
-	postgisDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# if resetTables: postgisDB.dropCreateTable('LINES')
+	# postgisDB.insertLines(lines, offset)
+	# postgisDB.disconnect()
 
-	hanaDB = hana.Hana()
-	if resetTables: hanaDB.dropCreateTable('BENCHMARK.LINES')
-	hanaDB.insertLines(lines, offset)
-	hanaDB.disconnect()
+	# hanaDB = hana.Hana()
+	# if resetTables: hanaDB.dropCreateTable('BENCHMARK.LINES')
+	# hanaDB.insertLines(lines, offset)
+	# hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	if resetTables: spatialiteDB.dropCreateTable('LINES')
@@ -141,15 +141,15 @@ def createPoints(areaLength):
 		if i % 1000 == 999:
 			print "finished: " + str(i+1)
 
-	postgisDB = postgis.Postgis()
-	postgisDB.dropCreateTable('POINTS')
-	postgisDB.insertPoints(points)
-	postgisDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# postgisDB.dropCreateTable('POINTS')
+	# postgisDB.insertPoints(points)
+	# postgisDB.disconnect()
 
-	hanaDB = hana.Hana()
-	hanaDB.dropCreateTable('BENCHMARK.B_POINTS')
-	hanaDB.insertPoints(points)
-	hanaDB.disconnect()
+	# hanaDB = hana.Hana()
+	# hanaDB.dropCreateTable('BENCHMARK.B_POINTS')
+	# hanaDB.insertPoints(points)
+	# hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	spatialiteDB.dropCreateTable('B_POINTS')

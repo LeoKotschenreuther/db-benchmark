@@ -94,7 +94,7 @@ class Postgis:
 			# print self.pointString(point)
 			insert = '''INSERT INTO POINTS (ID, X, Y, POINT) VALUES (%s, %s, %s, ST_PointFromText(%s, 4326))'''
 			self.cursor.execute(insert, (i, point['x'], point['y'], self.pointString(point)))
-			if i % 10000 == 9999:
+			if i % 1000 == 999:
 				print "finished: " + str(i+1)
 				self.connection.commit()
 			# self.cursor.execute(insert, (i, point['x'], point['y'], 'POINT(1 2)'))
@@ -121,9 +121,9 @@ class Postgis:
 		n = 0
 		for query in queries:
 			queryObject = {'name': query, 'times': list(), 'avg': 0}
-			self.cursor.execute(query)
-			for row in self.cursor:
-				print row
+			# self.cursor.execute(query)
+			# for row in self.cursor:
+			# 	print row
 			for x in range(0, numberOfExecutions):
 				query_string = 'EXPLAIN ANALYZE ' + query
 				# try:

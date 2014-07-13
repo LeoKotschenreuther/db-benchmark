@@ -167,9 +167,10 @@ class Hana:
             start = time.time()
             try:
                 self.cursor.execute(string)
-            except:
+            except Exception as e:
                 print "Error during execution of query"
                 print query
+                print e
                 return
             out.write(str(time.time()-start)+'\t' + resultname + '\n')
         self.cursor.execute(''' {CALL PLANVIZ_ACTION(?,?)} ''', (401, queryid)) # get plan after execution

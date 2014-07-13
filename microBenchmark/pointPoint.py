@@ -8,7 +8,7 @@ def run(numberOfExecutions):
 	results.append(runHana(numberOfExecutions))
 	results.append(runSpatialiteMain(numberOfExecutions))
 	
-	output.printSummary(results)
+	# output.printSummary(results)
 	return results
 
 def runHana(numberOfExecutions):
