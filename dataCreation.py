@@ -83,15 +83,15 @@ def createPolygons(resetTables, sizes, areaLength):
 
 	print "Created valid Polygons"
 
-	# postgisDB = postgis.Postgis()
-	# if resetTables: postgisDB.dropCreateTable('POLYGONS')
-	# postgisDB.insertPolygons(polygons, offset)
-	# postgisDB.disconnect()
+	postgisDB = postgis.Postgis()
+	if resetTables: postgisDB.dropCreateTable('POLYGONS')
+	postgisDB.insertPolygons(polygons, offset)
+	postgisDB.disconnect()
 
-	# hanaDB = hana.Hana()
-	# if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-	# hanaDB.insertPolygons(polygons, offset)
-	# hanaDB.disconnect()
+	hanaDB = hana.Hana()
+	if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	hanaDB.insertPolygons(polygons, offset)
+	hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
@@ -107,26 +107,24 @@ def createLines(resetTables, sizes, areaLength):
 			line = createLine(lineSize, areaLength)
 			lines.append(line)
 			if (x + i * int(math.ceil(numLines / len(sizes)))) % 1000 == 999:
-				print "finished: " + str(x + i * int(math.ceil(1000 / len(sizes))) + 1)
+				print "finished: " + str(x + i * int(math.ceil(numLines / len(sizes))) + 1)
 
 	print "Created valid Lines"
 
-	# postgisDB = postgis.Postgis()
-	# if resetTables: postgisDB.dropCreateTable('LINES')
-	# postgisDB.insertLines(lines, offset)
-	# postgisDB.disconnect()
+	postgisDB = postgis.Postgis()
+	if resetTables: postgisDB.dropCreateTable('LINES')
+	postgisDB.insertLines(lines, offset)
+	postgisDB.disconnect()
 
-	# hanaDB = hana.Hana()
-	# if resetTables: hanaDB.dropCreateTable('BENCHMARK.LINES')
-	# hanaDB.insertLines(lines, offset)
-	# hanaDB.disconnect()
+	hanaDB = hana.Hana()
+	if resetTables: hanaDB.dropCreateTable('BENCHMARK.LINES')
+	hanaDB.insertLines(lines, offset)
+	hanaDB.disconnect()
 
 	spatialiteDB = spatialite.Spatialite('benchmark.db')
 	if resetTables: spatialiteDB.dropCreateTable('LINES')
 	spatialiteDB.insertLines(lines, offset)
 	spatialiteDB.disconnect()
-
-	# print "Finished: " + str((a + 1) * num * 100 / numPolygons) + "%"
 
 def createPoints(areaLength):
 	points = list()
