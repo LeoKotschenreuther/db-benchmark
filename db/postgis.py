@@ -115,7 +115,7 @@ class Postgis:
 			flag = row[0]
 		return flag
 
-	def runQueries(self, queries, numberOfExecutions):
+	def runQueries(self, queries, numberOfExecutions, params):
 		results = {'database': 'postgis', 'queries': list()}
 		allQueries = len(queries) * numberOfExecutions
 		n = 0
@@ -127,7 +127,10 @@ class Postgis:
 			for x in range(0, numberOfExecutions):
 				query_string = 'EXPLAIN ANALYZE ' + query
 				# try:
-				self.cursor.execute(query_string)
+				if params:
+					self.cursor.execute(query_string, params)
+				else:
+					self.cursor.execute(query_string)
 				for row in self.cursor:
 					if row[0][0:15] == 'Total runtime: ':
 						# row looks like: "Total runtime: 123.456 ms"

@@ -140,7 +140,7 @@ def createPoints(areaLength):
 			print "finished: " + str(i+1)
 
 	# postgisDB = postgis.Postgis()
-	# postgisDB.dropCreateTable('POINTS')
+	# postgisDB.dropCreateTable('B_POINTS')
 	# postgisDB.insertPoints(points)
 	# postgisDB.disconnect()
 

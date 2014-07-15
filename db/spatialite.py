@@ -154,15 +154,19 @@ class Spatialite:
 			if row[0] == 1: flag = True
 		return flag
 
-	def runQueries(self, queries, numberOfExecutions):
+	def runQueries(self, queries, numberOfExecutions, params):
 		results = {'database': 'spatialite  - ' + self.db, 'queries': list()}
 		allQueries = len(queries) * numberOfExecutions
 		n = 0
 		for query in queries:
 			queryObject = {'name': query, 'times': list(), 'avg': 0}
 			for x in range(0, numberOfExecutions):
+				result = 0
 				startTime = time.time()
-				result = self.cursor.execute(query)
+				if params:
+					result = self.cursor.execute(query, params)
+				else:
+					result = self.cursor.execute(query)
 				endTime = time.time()
 				executionTime = 1000 * (endTime - startTime) # milliseconds
 				# for row in result:
