@@ -7,9 +7,10 @@ import polygon
 import spatialAnalysis
 
 def run(numberOfExecutions, areaLength):
+	results = list()
 	# results = nineIntersection.run(numberOfExecutions, areaLength)
-	results = point.run(numberOfExecutions)
-	results = line.run(numberOfExecutions)
-	results = polygon.run(numberOfExecutions)
-	results = spatialAnalysis.run(numberOfExecutions)
+	results.extend(point.run(numberOfExecutions))
+	results.extend(line.run(numberOfExecutions))
+	results.extend(polygon.run(numberOfExecutions))
+	results.extend(spatialAnalysis.run(numberOfExecutions))
 	return results
