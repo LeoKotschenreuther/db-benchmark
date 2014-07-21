@@ -60,16 +60,16 @@ def runSpatialiteMain(numberOfExecutions, params):
 
 def mysqlqueries(polygonID):
 	return [
-		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Equals(one.polygon, two.polygon) = 1 WHERE one.ID != two.ID AND one.ID = " + polygonID,
-		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Disjoint(one.polygon, two.polygon) = 1 WHERE one.ID = " + polygonID,
-		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Touches(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID,
-		"SELECT COUNT(*) FROM POLYGONS one JOIN B_LINES two ON Touches(one.polygon, two.line) = 1 WHERE one.ID = " + polygonID,
-		"SELECT COUNT(*) FROM B_LINES one JOIN POLYGONS two ON Crosses(one.line, two.polygon) = 1 WHERE two.ID = " + polygonID,
-		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Overlaps(one.polygon, two.polygon) = 1 WHERE one.ID = " + polygonID,
-		"SELECT COUNT(*) FROM B_POINTS one JOIN POLYGONS two ON Within(one.point, two.polygon) = 1 WHERE two.ID = " + polygonID,
-		"SELECT COUNT(*) FROM B_LINES one JOIN POLYGONS two ON Within(one.line, two.polygon) = 1 WHERE two.ID = " + polygonID,
-		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Within(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID,
-		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Contains(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Equals(one.polygon, two.polygon) = 1 WHERE one.ID != two.ID AND one.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Disjoint(one.polygon, two.polygon) = 1 WHERE one.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Touches(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN B_LINES two ON Touches(one.polygon, two.line) = 1 WHERE one.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM B_LINES one JOIN POLYGONS two ON Crosses(one.line, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Overlaps(one.polygon, two.polygon) = 1 WHERE one.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM B_POINTS one JOIN POLYGONS two ON Within(one.point, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM B_LINES one JOIN POLYGONS two ON Within(one.line, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Within(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Contains(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID
 		]
 
 def postgisqueries():

@@ -60,9 +60,9 @@ def runSpatialiteMain(numberOfExecutions, params):
 
 def mysqlqueries(lineID):
 	return [
-		"SELECT COUNT(*) FROM POLYGONS one JOIN B_LINES two ON Intersects(one.polygon, two.line) = 1 WHERE two.ID = " + lineID,
-		"SELECT COUNT(*) FROM B_POINTS one JOIN B_LINES two ON Intersects(one.point, two.line) = 1 WHERE two.ID = " + lineID, 
-		"SELECT COUNT(*) FROM B_LINES one JOIN B_LINES two ON Crosses(one.line, two.line) = 1 WHERE one.ID = " + lineID
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN B_LINES two ON Intersects(one.polygon, two.line) = 1 WHERE two.ID = " + lineID,
+		"SELECT SQL_NO_CACHE COUNT(*) FROM B_POINTS one JOIN B_LINES two ON Intersects(one.point, two.line) = 1 WHERE two.ID = " + lineID, 
+		"SELECT SQL_NO_CACHE COUNT(*) FROM B_LINES one JOIN B_LINES two ON Crosses(one.line, two.line) = 1 WHERE one.ID = " + lineID
 		]
 
 def postgisqueries():

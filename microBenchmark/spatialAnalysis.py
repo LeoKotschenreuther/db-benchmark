@@ -52,12 +52,12 @@ def runSpatialiteMain(numberOfExecutions):
 
 def mysqlqueries():
 	return [
-		"SELECT COUNT(*) FROM POLYGONS one JOIN (SELECT LINE FROM B_LINES ORDER BY GLength(line) DESC LIMIT 1) two ON Intersects(one.polygon, two.line) = 1",
-		"SELECT COUNT(*) FROM B_LINES one JOIN (SELECT POLYGON FROM POLYGONS ORDER BY Area(polygon) DESC LIMIT 1) two ON Intersects(one.line, two.polygon) = 1",
-		"SELECT COUNT(*) FROM B_POINTS one JOIN (SELECT polygon FROM POLYGONS ORDER BY Area(polygon) DESC LIMIT 1) two ON Contains(two.polygon, one.point) = 1",
-		"SELECT COUNT(*) FROM POLYGONS one JOIN (SELECT polygon FROM POLYGONS ORDER BY Area(polygon) DESC LIMIT 1) two ON Overlaps(two.polygon, one.polygon) = 1",
-		"SELECT ID, LINE FROM B_LINES ORDER BY GLength(line) LIMIT 1",
-		"SELECT ID, POLYGON FROM POLYGONS ORDER BY Area(polygon) LIMIT 1"
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN (SELECT LINE FROM B_LINES ORDER BY GLength(line) DESC LIMIT 1) two ON Intersects(one.polygon, two.line) = 1",
+		"SELECT SQL_NO_CACHE COUNT(*) FROM B_LINES one JOIN (SELECT POLYGON FROM POLYGONS ORDER BY Area(polygon) DESC LIMIT 1) two ON Intersects(one.line, two.polygon) = 1",
+		"SELECT SQL_NO_CACHE COUNT(*) FROM B_POINTS one JOIN (SELECT polygon FROM POLYGONS ORDER BY Area(polygon) DESC LIMIT 1) two ON Contains(two.polygon, one.point) = 1",
+		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN (SELECT polygon FROM POLYGONS ORDER BY Area(polygon) DESC LIMIT 1) two ON Overlaps(two.polygon, one.polygon) = 1",
+		"SELECT SQL_NO_CACHE ID, LINE FROM B_LINES ORDER BY GLength(line) LIMIT 1",
+		"SELECT SQL_NO_CACHE ID, POLYGON FROM POLYGONS ORDER BY Area(polygon) LIMIT 1"
 		]
 
 def postgisqueries():
