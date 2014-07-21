@@ -4,11 +4,11 @@ import math
 
 resetTables = True
 offset = 0
-polygonSizes = [10]
-lineSizes = [10, 20, 40, 60, 80, 100, 200, 400, 600, 800]
-numPoints = 5000
-numLines = 5000
-numPolygons = 5000
+polygonSizes = [2000]
+lineSizes = [10, 20, 50, 100, 200]
+numPoints = 10000
+numLines = 20000
+numPolygons = 1000
 
 def createData(areaLength):
 	# removeData(500)
@@ -78,25 +78,30 @@ def createPolygons(resetTables, sizes, areaLength):
 				# polygonIsValid = spatialiteDB.isPolygonValid(polygon)
 				# spatialiteDB.disconnect()
 			polygons.append(polygon)
-			if (x + i * int(math.ceil(numPolygons / len(sizes)))) % 1000 == 999:
+			if (x + i * int(math.ceil(numPolygons / len(sizes)))) % 10 == 9:
 				print "finished: " + str(x + i * int(math.ceil(1000 / len(sizes))) + 1)
 
 	print "Created valid Polygons"
 
-	postgisDB = postgis.Postgis()
-	if resetTables: postgisDB.dropCreateTable('POLYGONS')
-	postgisDB.insertPolygons(polygons, offset)
-	postgisDB.disconnect()
+	mysqlDB = mysql.Mysql()
+	if resetTables: mysqlDB.dropCreateTable('POLYGONS')
+	mysqlDB.insertPolygons(polygons, offset)
+	mysqlDB.disconnect()
 
-	hanaDB = hana.Hana()
-	if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
-	hanaDB.insertPolygons(polygons, offset)
-	hanaDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# if resetTables: postgisDB.dropCreateTable('POLYGONS')
+	# postgisDB.insertPolygons(polygons, offset)
+	# postgisDB.disconnect()
 
-	spatialiteDB = spatialite.Spatialite('benchmark.db')
-	if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
-	spatialiteDB.insertPolygons(polygons, offset)
-	spatialiteDB.disconnect()
+	# hanaDB = hana.Hana()
+	# if resetTables: hanaDB.dropCreateTable('BENCHMARK.POLYGONS')
+	# hanaDB.insertPolygons(polygons, offset)
+	# hanaDB.disconnect()
+
+	# spatialiteDB = spatialite.Spatialite('benchmark.db')
+	# if resetTables: spatialiteDB.dropCreateTable('POLYGONS')
+	# spatialiteDB.insertPolygons(polygons, offset)
+	# spatialiteDB.disconnect()
 
 	# print "Finished: " + str((a + 1) * num * 100 / numPolygons) + "%"
 
@@ -111,20 +116,25 @@ def createLines(resetTables, sizes, areaLength):
 
 	print "Created valid Lines"
 
-	postgisDB = postgis.Postgis()
-	if resetTables: postgisDB.dropCreateTable('LINES')
-	postgisDB.insertLines(lines, offset)
-	postgisDB.disconnect()
+	mysqlDB = mysql.Mysql()
+	mysqlDB.dropCreateTable('B_LINES')
+	mysqlDB.insertLines(lines, offset)
+	mysqlDB.disconnect()
 
-	hanaDB = hana.Hana()
-	if resetTables: hanaDB.dropCreateTable('BENCHMARK.LINES')
-	hanaDB.insertLines(lines, offset)
-	hanaDB.disconnect()
+	# postgisDB = postgis.Postgis()
+	# if resetTables: postgisDB.dropCreateTable('LINES')
+	# postgisDB.insertLines(lines, offset)
+	# postgisDB.disconnect()
 
-	spatialiteDB = spatialite.Spatialite('benchmark.db')
-	if resetTables: spatialiteDB.dropCreateTable('LINES')
-	spatialiteDB.insertLines(lines, offset)
-	spatialiteDB.disconnect()
+	# hanaDB = hana.Hana()
+	# if resetTables: hanaDB.dropCreateTable('BENCHMARK.LINES')
+	# hanaDB.insertLines(lines, offset)
+	# hanaDB.disconnect()
+
+	# spatialiteDB = spatialite.Spatialite('benchmark.db')
+	# if resetTables: spatialiteDB.dropCreateTable('LINES')
+	# spatialiteDB.insertLines(lines, offset)
+	# spatialiteDB.disconnect()
 
 def createPoints(areaLength):
 	points = list()
@@ -139,6 +149,11 @@ def createPoints(areaLength):
 		if i % 1000 == 999:
 			print "finished: " + str(i+1)
 
+	mysqlDB = mysql.Mysql()
+	mysqlDB.dropCreateTable('B_POINTS')
+	mysqlDB.insertPoints(points)
+	mysqlDB.disconnect()
+
 	# postgisDB = postgis.Postgis()
 	# postgisDB.dropCreateTable('B_POINTS')
 	# postgisDB.insertPoints(points)
@@ -149,10 +164,10 @@ def createPoints(areaLength):
 	# hanaDB.insertPoints(points)
 	# hanaDB.disconnect()
 
-	spatialiteDB = spatialite.Spatialite('benchmark.db')
-	spatialiteDB.dropCreateTable('B_POINTS')
-	spatialiteDB.insertPoints(points)
-	spatialiteDB.disconnect()
+	# spatialiteDB = spatialite.Spatialite('benchmark.db')
+	# spatialiteDB.dropCreateTable('B_POINTS')
+	# spatialiteDB.insertPoints(points)
+	# spatialiteDB.disconnect()
 
 def removeData(size):
 	postgisDB = postgis.Postgis()

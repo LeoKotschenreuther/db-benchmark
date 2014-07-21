@@ -1,4 +1,4 @@
-from db import hana, postgis, spatialite
+from db import hana, postgis, spatialite, mysql
 import output
 import random
 
@@ -13,11 +13,21 @@ def run(numberOfExecutions):
 	for row in result:
 		polygonID = int(random.random() * int(str(row[0])))
 
-	results.append(runPostgis(numberOfExecutions, [polygonID]))
-	results.append(runHana(numberOfExecutions, str(polygonID)))
-	results.append(runSpatialiteMain(numberOfExecutions, [polygonID]))
+	results.append(runMySQL(numberOfExecutions, str(polygonID)))
+	# results.append(runPostgis(numberOfExecutions, [polygonID]))
+	# results.append(runHana(numberOfExecutions, str(polygonID)))
+	# results.append(runSpatialiteMain(numberOfExecutions, [polygonID]))
 	
 	print ""
+	return results
+
+def runMySQL(numberOfExecutions, polygonID):
+	print('Started MySQL Benchmark')
+	db = mysql.Mysql()
+	results = db.runQueries(mysqlqueries(polygonID), numberOfExecutions)
+	db.disconnect()
+	print('Finished MySQL Benchmark')
+	output.printSingleResult(results)
 	return results
 
 def runHana(numberOfExecutions, polygonID):
@@ -47,6 +57,20 @@ def runSpatialiteMain(numberOfExecutions, params):
 	print('Finished spatialite Benchmark')
 	output.printSingleResult(spatialiteResults)
 	return spatialiteResults
+
+def mysqlqueries(polygonID):
+	return [
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Equals(one.polygon, two.polygon) = 1 WHERE one.ID != two.ID AND one.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Disjoint(one.polygon, two.polygon) = 1 WHERE one.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Touches(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN B_LINES two ON Touches(one.polygon, two.line) = 1 WHERE one.ID = " + polygonID,
+		"SELECT COUNT(*) FROM B_LINES one JOIN POLYGONS two ON Crosses(one.line, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Overlaps(one.polygon, two.polygon) = 1 WHERE one.ID = " + polygonID,
+		"SELECT COUNT(*) FROM B_POINTS one JOIN POLYGONS two ON Within(one.point, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT COUNT(*) FROM B_LINES one JOIN POLYGONS two ON Within(one.line, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Within(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Contains(one.polygon, two.polygon) = 1 WHERE two.ID = " + polygonID
+		]
 
 def postgisqueries():
 	return [

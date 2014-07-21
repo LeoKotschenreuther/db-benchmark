@@ -1,4 +1,4 @@
-from db import hana, postgis, spatialite
+from db import hana, postgis, spatialite, mysql
 import output
 import random
 
@@ -13,11 +13,21 @@ def run(numberOfExecutions):
 	for row in result:
 		lineID = int(random.random() * int(str(row[0])))
 
-	results.append(runPostgis(numberOfExecutions, [lineID]))
-	results.append(runHana(numberOfExecutions, str(lineID)))
-	results.append(runSpatialiteMain(numberOfExecutions, [lineID]))
+	results.append(runMySQL(numberOfExecutions, str(lineID)))
+	# results.append(runPostgis(numberOfExecutions, [lineID]))
+	# results.append(runHana(numberOfExecutions, str(lineID)))
+	# results.append(runSpatialiteMain(numberOfExecutions, [lineID]))
 	
 	print ""
+	return results
+
+def runMySQL(numberOfExecutions, lineID):
+	print('Started MySQL Benchmark')
+	db = mysql.Mysql()
+	results = db.runQueries(mysqlqueries(lineID), numberOfExecutions)
+	db.disconnect()
+	print('Finished MySQL Benchmark')
+	output.printSingleResult(results)
 	return results
 
 def runHana(numberOfExecutions, lineID):
@@ -47,6 +57,13 @@ def runSpatialiteMain(numberOfExecutions, params):
 	print('Finished spatialite Benchmark')
 	output.printSingleResult(spatialiteResults)
 	return spatialiteResults
+
+def mysqlqueries(lineID):
+	return [
+		"SELECT COUNT(*) FROM POLYGONS one JOIN B_LINES two ON Intersects(one.polygon, two.line) = 1 WHERE two.ID = " + lineID,
+		"SELECT COUNT(*) FROM B_POINTS one JOIN B_LINES two ON Intersects(one.point, two.line) = 1 WHERE two.ID = " + lineID, 
+		"SELECT COUNT(*) FROM B_LINES one JOIN B_LINES two ON Crosses(one.line, two.line) = 1 WHERE one.ID = " + lineID
+		]
 
 def postgisqueries():
 	return [

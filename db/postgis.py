@@ -121,7 +121,10 @@ class Postgis:
 		n = 0
 		for query in queries:
 			queryObject = {'name': query, 'times': list(), 'avg': 0}
-			# self.cursor.execute(query)
+			# if params:
+			# 	self.cursor.execute(query, params)
+			# else:
+			# 	self.cursor.execute(query)
 			# for row in self.cursor:
 			# 	print row
 			for x in range(0, numberOfExecutions):

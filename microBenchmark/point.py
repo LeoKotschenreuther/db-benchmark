@@ -1,4 +1,4 @@
-from db import hana, postgis, spatialite
+from db import hana, postgis, spatialite, mysql
 import output
 import random
 
@@ -13,15 +13,25 @@ def run(numberOfExecutions):
 	for row in result:
 		pointID = int(random.random() * int(str(row[0])))
 
-	results.append(runPostgis(numberOfExecutions, [pointID]))
-	results.append(runHana(numberOfExecutions, str(pointID)))
-	results.append(runSpatialiteMain(numberOfExecutions, [pointID]))
+	results.append(runMySQL(numberOfExecutions, str(pointID)))
+	# results.append(runPostgis(numberOfExecutions, [pointID]))
+	# results.append(runHana(numberOfExecutions, str(pointID)))
+	# results.append(runSpatialiteMain(numberOfExecutions, [pointID]))
 	
 	print ""
 	return results
 
+def runMySQL(numberOfExecutions, pointID):
+	print('Started MySQL Benchmark')
+	db = mysql.Mysql()
+	results = db.runQueries(mysqlqueries(pointID), numberOfExecutions)
+	db.disconnect()
+	print('Finished MySQL Benchmark')
+	output.printSingleResult(results)
+	return results
+
 def runHana(numberOfExecutions, pointID):
-	print('Starting Hana Benchmark')
+	print('Started Hana Benchmark')
 	hanaDB = hana.Hana()
 	hanaResults = hanaDB.runQueries(hanaqueries(pointID), numberOfExecutions)
 	hanaDB.disconnect()
@@ -47,6 +57,12 @@ def runSpatialiteMain(numberOfExecutions, params):
 	print('Finished spatialite Benchmark')
 	output.printSingleResult(spatialiteResults)
 	return spatialiteResults
+
+def mysqlqueries(pointID):
+	return [
+		"SELECT COUNT(*) FROM B_POINTS one JOIN B_POINTS two ON Equals(one.point, two.point) = 1 WHERE one.ID != two.ID AND two.ID = " + pointID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN B_POINTS two ON Intersects(one.polygon, two.point) = 1 WHERE two.ID = " + pointID
+		]
 
 def postgisqueries():
 	return [

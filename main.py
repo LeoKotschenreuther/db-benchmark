@@ -7,7 +7,7 @@ import random
 import math
 import time
 
-numberOfExecutions = 1
+numberOfExecutions = 50
 areaLength = 10000
 
 results = list()
