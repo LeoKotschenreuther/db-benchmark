@@ -9,7 +9,7 @@ class Mysql:
 		self.cursor.execute('SET PROFILING = 1')
 
 	def connect(self):
-		return MySQLdb.connect(host="192.168.30.136", # your host, usually localhost
+		return MySQLdb.connect(host="192.168.30.92", # your host, usually localhost
 						 port=3306,
 	                     user="gis", # your username
 	                      passwd="benchmark", # your password

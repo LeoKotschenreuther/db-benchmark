@@ -8,9 +8,12 @@ class Postgis:
 	def __init__(self):
 		self.connection = self.connect()
 		self.cursor = self.connection.cursor()
+		self.cursor.execute("SELECT * FROM test")
+		for row in self.cursor:
+			print row
 
 	def connect(self):
-		conn_string = "host='192.168.30.136' dbname='benchmark' user='gis' password='benchmark'"
+		conn_string = "host='192.168.30.92' dbname='benchmark' user='gis' password='benchmark'"
 		return psycopg2.connect(conn_string) 
 
 	def disconnect(self):
