@@ -35,9 +35,9 @@ if [ $1 == "mysql" ]; then
 elif [ $1 == "postgresql" ]; then
 	# import to postgresql
 	if [ $2 == "append" ]; then
-		shp2pgsql -a -I -s 4326 "$5" "$6" | psql -U gis -d benchmark
+		shp2pgsql -a -I -s 4326 "$5" "$6" | psql -U gis -d benchmark > out.log
 	elif [ $2 == "create" ]; then
-		shp2pgsql -I -s 4326 "$5" "$6" | psql -U gis -d benchmark
+		shp2pgsql -I -s 4326 "$5" "$6" | psql -U gis -d benchmark > out.log
 	fi
 fi
 
