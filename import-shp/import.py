@@ -44,8 +44,8 @@ def run_import(database):
 	print "Importing land_use_2012"
 	importFile(database, options, filedirectory, 'land_use_2012.zip', 'land_use_2012.shp', 'land_use_2012')
 
-	print "Importing hospitals"
-	importFile(database, options, filedirectory, 'hospitals.zip', 'hospitals.shp', 'hospitals')
+	# print "Importing hospitals"
+	# importFile(database, options, filedirectory, 'hospitals.zip', 'hospitals.shp', 'hospitals')
 
 	print "Importing landfills"
 	importFile(database, options, filedirectory, 'landfills.zip', 'landfills.shp', 'landfills')
