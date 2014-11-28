@@ -68,7 +68,7 @@ def main(argv):
 			print usage
 			sys.exit()
 		elif opt in ("-d", "--database"):
-			if database in supported_databases:
+			if arg in supported_databases:
 				database = arg
 			else:
 				print "Given database is not supported."
