@@ -1,21 +1,21 @@
-from db import mysql, postgis, spatialite, hana
+from db import mysql, postgis, spatialite, hana, monetdb_db
 import random
 import math
 
-resetTables = True
-offset = 0
+resetTables = False
+offset = 44700
 polygonSizes = [2000]
 lineSizes = [10, 20, 50, 100, 200]
 numPoints = 10000
 numLines = 20000
-numPolygons = 1000
+numPolygons = 300
 
 def createData(areaLength):
 	# removeData(500)
 
 	# createPoints(areaLength)
-	# createPolygons(resetTables, polygonSizes, areaLength)
-	createLines(resetTables, lineSizes, areaLength)
+	createPolygons(resetTables, polygonSizes, areaLength)
+	# createLines(resetTables, lineSizes, areaLength)
 
 def createPolygon(size, areaLength):
 	if size < 3:
@@ -68,25 +68,28 @@ def createPolygons(resetTables, sizes, areaLength):
 			while not polygonIsValid:
 				polygon = createPolygon(polygonSize, areaLength)
 				# check whether they intersect:
-				hanaDB = hana.Hana()
-				polygonIsValid = hanaDB.isPolygonValid(polygon)
-				hanaDB.disconnect()
-				# postgisDB = postgis.Postgis()
-				# polygonIsValid = postgisDB.isPolygonValid(polygon)
-				# postgisDB.disconnect()
+				# hanaDB = hana.Hana()
+				# polygonIsValid = hanaDB.isPolygonValid(polygon)
+				# hanaDB.disconnect()
+				postgisDB = postgis.Postgis()
+				polygonIsValid = postgisDB.isPolygonValid(polygon)
+				postgisDB.disconnect()
 				# spatialiteDB = spatialite.Spatialite(':memory:')
 				# polygonIsValid = spatialiteDB.isPolygonValid(polygon)
 				# spatialiteDB.disconnect()
+				# monetDB = monetdb_db.Monetdb()
+				# polygonIsValid = monetDB.isPolygonValid(polygon)
+				# monetDB.disconnect()
 			polygons.append(polygon)
-			if (x + i * int(math.ceil(numPolygons / len(sizes)))) % 10 == 9:
+			if (x + i * int(math.ceil(numPolygons / len(sizes)))) % 100 == 99:
 				print "finished: " + str(x + i * int(math.ceil(1000 / len(sizes))) + 1)
 
 	print "Created valid Polygons"
 
-	mysqlDB = mysql.Mysql()
-	if resetTables: mysqlDB.dropCreateTable('POLYGONS')
-	mysqlDB.insertPolygons(polygons, offset)
-	mysqlDB.disconnect()
+	# mysqlDB = mysql.Mysql()
+	# if resetTables: mysqlDB.dropCreateTable('POLYGONS')
+	# mysqlDB.insertPolygons(polygons, offset)
+	# mysqlDB.disconnect()
 
 	# postgisDB = postgis.Postgis()
 	# if resetTables: postgisDB.dropCreateTable('POLYGONS')
@@ -103,7 +106,10 @@ def createPolygons(resetTables, sizes, areaLength):
 	# spatialiteDB.insertPolygons(polygons, offset)
 	# spatialiteDB.disconnect()
 
-	# print "Finished: " + str((a + 1) * num * 100 / numPolygons) + "%"
+	monetDB = monetdb_db.Monetdb()
+	if resetTables: monetDB.dropCreateTable('polygons')
+	monetDB.insertPolygons(polygons, offset)
+	monetDB.disconnect()
 
 def createLines(resetTables, sizes, areaLength):
 	lines = list()
@@ -116,10 +122,10 @@ def createLines(resetTables, sizes, areaLength):
 
 	print "Created valid Lines"
 
-	mysqlDB = mysql.Mysql()
-	mysqlDB.dropCreateTable('B_LINES')
-	mysqlDB.insertLines(lines, offset)
-	mysqlDB.disconnect()
+	# mysqlDB = mysql.Mysql()
+	# mysqlDB.dropCreateTable('B_LINES')
+	# mysqlDB.insertLines(lines, offset)
+	# mysqlDB.disconnect()
 
 	# postgisDB = postgis.Postgis()
 	# if resetTables: postgisDB.dropCreateTable('LINES')
@@ -136,6 +142,11 @@ def createLines(resetTables, sizes, areaLength):
 	# spatialiteDB.insertLines(lines, offset)
 	# spatialiteDB.disconnect()
 
+	monetDB = monetdb_db.Monetdb()
+	if resetTables: monetDB.dropCreateTable('lines')
+	monetDB.insertLines(lines, offset)
+	monetDB.disconnect()
+
 def createPoints(areaLength):
 	points = list()
 	x = random.random() * 2 * areaLength - areaLength
@@ -149,10 +160,10 @@ def createPoints(areaLength):
 		if i % 1000 == 999:
 			print "finished: " + str(i+1)
 
-	mysqlDB = mysql.Mysql()
-	mysqlDB.dropCreateTable('B_POINTS')
-	mysqlDB.insertPoints(points)
-	mysqlDB.disconnect()
+	# mysqlDB = mysql.Mysql()
+	# mysqlDB.dropCreateTable('B_POINTS')
+	# mysqlDB.insertPoints(points)
+	# mysqlDB.disconnect()
 
 	# postgisDB = postgis.Postgis()
 	# postgisDB.dropCreateTable('B_POINTS')
@@ -168,6 +179,11 @@ def createPoints(areaLength):
 	# spatialiteDB.dropCreateTable('B_POINTS')
 	# spatialiteDB.insertPoints(points)
 	# spatialiteDB.disconnect()
+
+	monetDB = monetdb_db.Monetdb()
+	monetDB.dropCreateTable('points')
+	monetDB.insertPoints(points)
+	monetDB.disconnect()
 
 def removeData(size):
 	postgisDB = postgis.Postgis()

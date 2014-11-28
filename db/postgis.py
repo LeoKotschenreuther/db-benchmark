@@ -8,9 +8,9 @@ class Postgis:
 	def __init__(self):
 		self.connection = self.connect()
 		self.cursor = self.connection.cursor()
-		self.cursor.execute("SELECT * FROM test")
-		for row in self.cursor:
-			print row
+		# self.cursor.execute("SELECT * FROM test")
+		# for row in self.cursor:
+		# 	print row
 
 	def connect(self):
 		conn_string = "host='192.168.30.92' dbname='benchmark' user='gis' password='benchmark'"
@@ -37,7 +37,7 @@ class Postgis:
 		return "Point(" + str(point['x']) + " " + str(point['y']) + ")"
 
 	def isPolygonValid(self, polygon):
-		query = "SELECT ST_ISVALID(" + self.polygonString(polygon) + ")"
+		query = "SELECT ST_ISVALID(ST_GeomFromText('" + self.polygonString(polygon) + "', 4326))"
 		try:
 			self.cursor.execute(query)
 			rows = self.cursor.fetchall()

@@ -1,14 +1,15 @@
-from db import hana, postgis, spatialite, mysql
+from db import hana, postgis, spatialite, mysql, monetdb_db
 import output
 
 def run(numberOfExecutions):
 	print "Spatial Analysis:\n"
 	results = list()
 
-	results.append(runMySQL(numberOfExecutions))
+	# results.append(runMySQL(numberOfExecutions))
 	# results.append(runPostgis(numberOfExecutions))
 	# results.append(runHana(numberOfExecutions))
 	# results.append(runSpatialiteMain(numberOfExecutions))
+	results.append(runMonetDB(numberOfExecutions))
 	
 	print ""
 	return results
@@ -50,6 +51,15 @@ def runSpatialiteMain(numberOfExecutions):
 	output.printSingleResult(spatialiteResults)
 	return spatialiteResults
 
+def runMonetDB(numberOfExecutions):
+	print('Started MonetDB Benchmark')
+	db = monetdb_db.Monetdb()
+	results = db.runQueries(monetdbqueries(), numberOfExecutions)
+	db.disconnect()
+	print('Finished MonetDB Benchmark')
+	output.printSingleResult(results)
+	return results
+
 def mysqlqueries():
 	return [
 		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN (SELECT LINE FROM B_LINES ORDER BY GLength(line) DESC LIMIT 1) two ON Intersects(one.polygon, two.line) = 1",
@@ -87,5 +97,15 @@ def spatialitequeries():
 		"SELECT COUNT(*) FROM B_POINTS one JOIN (SELECT polygon FROM POLYGONS ORDER BY Area(polygon) DESC LIMIT 1) two ON Contains(two.polygon, one.point) = 1",
 		"SELECT COUNT(*) FROM POLYGONS one JOIN (SELECT polygon FROM POLYGONS ORDER BY Area(polygon) DESC LIMIT 1) two ON Overlaps(two.polygon, one.polygon) = 1",
 		"SELECT ID, LINE FROM LINES ORDER BY Length(line) LIMIT 1",
-		"SELECT ID, POLYGON FROM POLYGONS ORDER BY Area(polygon) LIMIT 1"
+		"SELECT ID, POLYGON FROM POLYGONS ORR BY Area(polygon) LIMIT 1"
+		]
+
+def monetdbqueries():
+	return [
+		"SELECT COUNT(*) FROM POLYGONS one JOIN (SELECT LINE FROM LINES where length(line) = (select max(length(line)) from lines) ) two ON \"Intersect\"(one.polygon, two.line) = TRUE",
+		"SELECT COUNT(*) FROM LINES one JOIN (SELECT POLYGON FROM POLYGONS where Area(polygon) = (select max(Area(polygon)) from polygons)) two ON \"Intersect\"(one.line, two.polygon) = TRUE",
+		"SELECT COUNT(*) FROM POINTS one JOIN (SELECT polygon FROM POLYGONS where Area(polygon) = (select max(Area(polygon)) from polygons)) two ON Contains(two.polygon, one.point) = TRUE",
+		"SELECT COUNT(*) FROM POLYGONS one JOIN (SELECT polygon FROM POLYGONS where Area(polygon) = (select max(Area(polygon)) from polygons)) two ON Overlaps(two.polygon, one.polygon) = TRUE",
+		# "SELECT ID FROM LINES ORDER BY Length(line) LIMIT 1",
+		# "SELECT ID FROM POLYGONS ORDER BY Area(polygon) LIMIT 1"
 		]

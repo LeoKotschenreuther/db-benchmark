@@ -20,7 +20,7 @@ print (end - start)
 # results = macroBenchmark.run(numberOfExecutions)
 
 print('Start printing results')
-output.print9ISummary(results)
+# output.print9ISummary(results)
 print('Finished printing results')
 
 # db = postgis.Postgis()

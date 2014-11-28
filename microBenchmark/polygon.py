@@ -1,4 +1,4 @@
-from db import hana, postgis, spatialite, mysql
+from db import hana, postgis, spatialite, mysql, monetdb_db
 import output
 import random
 
@@ -6,17 +6,18 @@ def run(numberOfExecutions):
 	print "Polygons:\n"
 	results = list()
 	polygonID = 0
-	hanaDB = hana.Hana()
-	query = "SELECT COUNT(*) FROM BENCHMARK.POLYGONS"
-	hanaDB.cursor.execute(query)
-	result = hanaDB.cursor.fetchall()
+	monetDB = monetdb_db.Monetdb()
+	query = "SELECT COUNT(*) FROM POLYGONS"
+	monetDB.cursor.execute(query)
+	result = monetDB.cursor.fetchall()
 	for row in result:
 		polygonID = int(random.random() * int(str(row[0])))
 
-	results.append(runMySQL(numberOfExecutions, str(polygonID)))
+	# results.append(runMySQL(numberOfExecutions, str(polygonID)))
 	# results.append(runPostgis(numberOfExecutions, [polygonID]))
 	# results.append(runHana(numberOfExecutions, str(polygonID)))
 	# results.append(runSpatialiteMain(numberOfExecutions, [polygonID]))
+	results.append(runMonetDB(numberOfExecutions, str(polygonID)))
 	
 	print ""
 	return results
@@ -57,6 +58,15 @@ def runSpatialiteMain(numberOfExecutions, params):
 	print('Finished spatialite Benchmark')
 	output.printSingleResult(spatialiteResults)
 	return spatialiteResults
+
+def runMonetDB(numberOfExecutions, polygonID):
+	print('Started MonetDB Benchmark')
+	db = monetdb_db.Monetdb()
+	results = db.runQueries(monetdbqueries(polygonID), numberOfExecutions)
+	db.disconnect()
+	print('Finished MonetDB Benchmark')
+	output.printSingleResult(results)
+	return results
 
 def mysqlqueries(polygonID):
 	return [
@@ -112,4 +122,18 @@ def spatialitequeries():
 		"SELECT COUNT(*) FROM LINES one JOIN POLYGONS two ON Within(one.line, two.polygon) = 1 WHERE two.ID = ?",
 		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Within(one.polygon, two.polygon) = 1 WHERE TWO.ID = ?",
 		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Contains(one.polygon, two.polygon) = 1 WHERE TWO.ID = ?"
+		]
+
+def monetdbqueries(polygonID):
+	return [
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Equals(one.polygon, two.polygon) = TRUE WHERE ONE.ID <> Two.ID AND ONE.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Disjoint(one.polygon, two.polygon) = TRUE WHERE ONE.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Touches(one.polygon, two.polygon) = TRUE WHERE TWO.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN LINES two ON Touches(one.polygon, two.line) = TRUE WHERE ONE.ID = " + polygonID,
+		"SELECT COUNT(*) FROM LINES one JOIN POLYGONS two ON Crosses(one.line, two.polygon) = TRUE WHERE two.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Overlaps(one.polygon, two.polygon) = TRUE WHERE ONE.ID = " + polygonID,
+		"SELECT COUNT(*) FROM Points one JOIN POLYGONS two ON Within(one.point, two.polygon) = TRUE WHERE TWO.ID = " + polygonID,
+		"SELECT COUNT(*) FROM LINES one JOIN POLYGONS two ON Within(one.line, two.polygon) = TRUE WHERE two.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Within(one.polygon, two.polygon) = TRUE WHERE TWO.ID = " + polygonID,
+		"SELECT COUNT(*) FROM POLYGONS one JOIN POLYGONS two ON Contains(one.polygon, two.polygon) = TRUE WHERE TWO.ID = " + polygonID
 		]

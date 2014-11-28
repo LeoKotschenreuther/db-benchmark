@@ -1,4 +1,4 @@
-from db import hana, postgis, spatialite, mysql
+from db import hana, postgis, spatialite, mysql, monetdb_db
 import output
 import random
 
@@ -6,17 +6,18 @@ def run(numberOfExecutions):
 	print "Lines:\n"
 	results = list()
 	lineID = 0
-	hanaDB = hana.Hana()
-	query = "SELECT COUNT(*) FROM BENCHMARK.LINES"
-	hanaDB.cursor.execute(query)
-	result = hanaDB.cursor.fetchall()
+	monetDB = monetdb_db.Monetdb()
+	query = "SELECT COUNT(*) FROM LINES"
+	monetDB.cursor.execute(query)
+	result = monetDB.cursor.fetchall()
 	for row in result:
 		lineID = int(random.random() * int(str(row[0])))
 
-	results.append(runMySQL(numberOfExecutions, str(lineID)))
+	# results.append(runMySQL(numberOfExecutions, str(lineID)))
 	# results.append(runPostgis(numberOfExecutions, [lineID]))
 	# results.append(runHana(numberOfExecutions, str(lineID)))
 	# results.append(runSpatialiteMain(numberOfExecutions, [lineID]))
+	results.append(runMonetDB(numberOfExecutions, str(lineID)))
 	
 	print ""
 	return results
@@ -58,6 +59,15 @@ def runSpatialiteMain(numberOfExecutions, params):
 	output.printSingleResult(spatialiteResults)
 	return spatialiteResults
 
+def runMonetDB(numberOfExecutions, lineID):
+	print('Started MonetDB Benchmark')
+	db = monetdb_db.Monetdb()
+	results = db.runQueries(monetdbqueries(lineID), numberOfExecutions)
+	db.disconnect()
+	print('Finished MonetDB Benchmark')
+	output.printSingleResult(results)
+	return results
+
 def mysqlqueries(lineID):
 	return [
 		"SELECT SQL_NO_CACHE COUNT(*) FROM POLYGONS one JOIN B_LINES two ON Intersects(one.polygon, two.line) = 1 WHERE two.ID = " + lineID,
@@ -84,4 +94,11 @@ def spatialitequeries():
 		"SELECT COUNT(*) FROM POLYGONS one JOIN LINES two ON Intersects(one.polygon, two.line) = 1 WHERE TWO.ID = ?",
 		"SELECT COUNT(*) FROM B_POINTS one JOIN LINES two ON Intersects(one.point, two.line) = 1 WHERE two.ID = ?", 
 		"SELECT COUNT(*) FROM LINES one JOIN LINES two ON Crosses(one.line, two.line) = 1 WHERE one.ID = ?"
+		]
+
+def monetdbqueries(lineID):
+	return [
+		"SELECT COUNT(*) FROM POLYGONS one JOIN LINES two ON \"Intersect\"(one.polygon, two.line) = TRUE WHERE TWO.ID = " + lineID,
+		"SELECT COUNT(*) FROM POINTS one JOIN LINES two ON \"Intersect\"(one.point, two.line) = TRUE WHERE two.ID = " + lineID, 
+		"SELECT COUNT(*) FROM LINES one JOIN LINES two ON Crosses(one.line, two.line) = TRUE WHERE one.ID = " + lineID
 		]
