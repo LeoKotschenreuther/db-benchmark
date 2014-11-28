@@ -3,45 +3,52 @@ import sys, getopt
 
 supported_databases = ("mysql", "postgresql")
 
-def importFile(database, location, zipfile, shpfile, table):
-	subprocess.call(['sh', 'import.sh', database, location, zipfile, shpfile, table])
+def importFile(database, options, location, zipfile, shpfile, table):
+	subprocess.call(['sh', 'import.sh', database, options, location, zipfile, shpfile, table])
 
 def run_import(database):
 	filedirectory = 'shapefiles'
+	options = "drop"
 
 	print "Importing edges_merge"
 	for x in range(48001, 48508, 2):
 		print x
-		importFile(database, filedirectory + '/edges_merge', 'tl_2014_' + str(x) + '_edges.zip', 'tl_2014_' + str(x) + '_edges.shp', 'edges_merge')
+		if x != 48001:
+			options = "append"
+		importFile(database, options, filedirectory + '/edges_merge', 'tl_2014_' + str(x) + '_edges.zip', 'tl_2014_' + str(x) + '_edges.shp', 'edges_merge')
+	options = "drop"
 
 	print "Importing pointlm_merge"
-	importFile(database, filedirectory + '/pointlm_merge', 'tl_2014_48_pointlm.zip', 'tl_2014_48_pointlm.shp', 'pointlm_merge')
+	importFile(database, options, filedirectory + '/pointlm_merge', 'tl_2014_48_pointlm.zip', 'tl_2014_48_pointlm.shp', 'pointlm_merge')
 
 
 	print "Importing arealm_merge"
-	importFile(database, filedirectory + '/arealm_merge', 'tl_2014_48_arealm.zip', 'tl_2014_48_arealm.shp', 'arealm_merge')
+	importFile(database, options, filedirectory + '/arealm_merge', 'tl_2014_48_arealm.zip', 'tl_2014_48_arealm.shp', 'arealm_merge')
 
 	print "Importing areawater_merge"
 	for x in range(48001, 48508, 2):
 		print x
-		importFile(database, filedirectory + '/areawater_merge', 'tl_2014_' + str(x) + '_areawater.zip', 'tl_2014_' + str(x) + '_areawater.shp', 'areawater_merge')
+		if x != 48001:
+			options = "append"
+		importFile(database, options,  filedirectory + '/areawater_merge', 'tl_2014_' + str(x) + '_areawater.zip', 'tl_2014_' + str(x) + '_areawater.shp', 'areawater_merge')
+	options = "drop"
 
 	print "Importing gnis_names09"
-	importFile(database, filedirectory, 'GNIS-2009.zip', 'GNIS-2009/gnis_names09.shp', 'gnis_names09')
+	importFile(database, options, filedirectory, 'GNIS-2009.zip', 'GNIS-2009/gnis_names09.shp', 'gnis_names09')
 
 	print "Importing DFIRM Database"
-	importFile(database, filedirectory, 'DFIRM_DB.zip', 'DFIRM_DB/S_FLD_HAZ_AR.shp', 's_fld_haz_ar')
-	importFile(database, filedirectory, 'DFIRM_DB.zip', 'DFIRM_DB/S_GEN_STRUCT.shp', 's_gen_struct')
-	importFile(database, filedirectory, 'DFIRM_DB.zip', 'DFIRM_DB/S_WTR_AR.shp', 'a')
+	importFile(database, options, filedirectory, 'DFIRM_DB.zip', 'DFIRM_DB/S_FLD_HAZ_AR.shp', 's_fld_haz_ar')
+	importFile(database, options, filedirectory, 'DFIRM_DB.zip', 'DFIRM_DB/S_GEN_STRUCT.shp', 's_gen_struct')
+	importFile(database, options, filedirectory, 'DFIRM_DB.zip', 'DFIRM_DB/S_WTR_AR.shp', 'a')
 
 	print "Importing land_use_2012"
-	importFile(database, filedirectory, 'land_use_2012.zip', 'land_use_2012.shp', 'land_use_2012')
+	importFile(database, options, filedirectory, 'land_use_2012.zip', 'land_use_2012.shp', 'land_use_2012')
 
 	print "Importing hospitals"
-	importFile(database, filedirectory, 'hospitals.zip', 'hospitals.shp', 'hospitals')
+	importFile(database, options, filedirectory, 'hospitals.zip', 'hospitals.shp', 'hospitals')
 
 	print "Importing landfills"
-	importFile(database, filedirectory, 'landfills.zip', 'landfills.shp', 'landfills')
+	importFile(database, options, filedirectory, 'landfills.zip', 'landfills.shp', 'landfills')
 
 def main(argv):
 	database = ''
