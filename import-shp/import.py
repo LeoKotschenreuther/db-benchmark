@@ -8,7 +8,7 @@ def importFile(database, options, location, zipfile, shpfile, table):
 
 def run_import(database):
 	filedirectory = 'shapefiles'
-	options = "drop"
+	options = "create"
 
 	print "Importing edges_merge"
 	for x in range(48001, 48508, 2):
@@ -16,7 +16,7 @@ def run_import(database):
 		if x != 48001:
 			options = "append"
 		importFile(database, options, filedirectory + '/edges_merge', 'tl_2014_' + str(x) + '_edges.zip', 'tl_2014_' + str(x) + '_edges.shp', 'edges_merge')
-	options = "drop"
+	options = "create"
 
 	print "Importing pointlm_merge"
 	importFile(database, options, filedirectory + '/pointlm_merge', 'tl_2014_48_pointlm.zip', 'tl_2014_48_pointlm.shp', 'pointlm_merge')
@@ -31,7 +31,7 @@ def run_import(database):
 		if x != 48001:
 			options = "append"
 		importFile(database, options,  filedirectory + '/areawater_merge', 'tl_2014_' + str(x) + '_areawater.zip', 'tl_2014_' + str(x) + '_areawater.shp', 'areawater_merge')
-	options = "drop"
+	options = "create"
 
 	print "Importing gnis_names09"
 	importFile(database, options, filedirectory, 'GNIS-2009.zip', 'GNIS-2009/gnis_names09.shp', 'gnis_names09')
