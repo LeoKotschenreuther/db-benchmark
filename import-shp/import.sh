@@ -34,9 +34,9 @@ if [ $1 == "mysql" ]; then
 	ogr2ogr -f "MySQL" MySQL:"mysql,user=root,host=localhost,password=admin" -lco engine=MYISAM "$5" -append -skipfailures -nln "$6"
 elif [ $1 == "postgresql" ]; then
 	# import to postgresql
-	if [ $2 == "append" ];
+	if [ $2 == "append" ]; then
 		shp2pgsql -a -I -s 4326 "$5" "$6" | psql -U gis -d benchmark
-	elif [ $2 == "drop" ];
+	elif [ $2 == "drop" ]; then
 		shp2pgsql -d -I -s 4326 "$5" "$6" | psql -U gis -d benchmark
 	fi
 fi
