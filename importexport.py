@@ -69,6 +69,7 @@ def importExport(source_db, destination_db, tableNames):
 				selectAll += column['name'] + ', '
 		selectAll = selectAll[:-2] + " from " + table
 		in_db.cursor.execute(selectAll)
+		counter = 0
 		for row in in_db.cursor:
 			insert = "INSERT INTO " + table + " ("
 			for column in columns:
@@ -81,6 +82,10 @@ def importExport(source_db, destination_db, tableNames):
 					insert += "%s, "
 			insert = insert[:-2] + ")"
 			out_db.cursor.execute(insert, row)
+			counter += 1
+			if counter % 1000 == 0:
+				print counter
+				out_db.connection.commit()
 
 		out_db.connection.commit()
 		print "Finished table " + table 
