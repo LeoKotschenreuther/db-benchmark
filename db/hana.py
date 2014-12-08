@@ -1,16 +1,16 @@
 import jaydebeapi
 import xml.etree.ElementTree as ET
-import hanaCredentials
 import math
 import time
 
 class Hana:
 
     def __init__(self):
-        self.HOST = hanaCredentials.host()
-        self.PASSWORD = hanaCredentials.pw()
-        self.PORT = hanaCredentials.port()
-        self.USER = hanaCredentials.user()
+        self.HOST = '172.16.19.226'
+        self.PASSWORD = 'manager'
+        self.PORT = 31415
+        # self.PORT = 30015
+        self.USER = 'SYSTEM'
         self.connection = self.connect()
         self.cursor = self.connection.cursor()
 
