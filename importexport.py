@@ -67,7 +67,7 @@ def importExport(source_db, destination_db, tableNames):
 				selectAll += "AsText(" + column['name'] + "), "
 			else:
 				selectAll += column['name'] + ', '
-		selectAll = selectAll[:-2] + " from " + table + " limit 1000"
+		selectAll = selectAll[:-2] + " from " + table
 		in_db.cursor.execute(selectAll)
 		for row in in_db.cursor:
 			insert = "INSERT INTO " + table + " ("
