@@ -4,6 +4,7 @@ import re
 from db import mysql, postgis
 
 supported_databases = ("mysql", "postgis", "postgresql")
+chunk_size = 10000
 
 def loadTableNames(tablesfile):
 	return [line.rstrip() for line in tablesfile]
@@ -61,33 +62,45 @@ def importExport(source_db, destination_db, tableNames):
 		out_db.cursor.execute(createTable)
 		out_db.connection.commit()
 
-		selectAll = "SELECT "
-		for column in columns:
-			if column['type'] == "geometry":
-				selectAll += "AsText(" + column['name'] + "), "
-			else:
-				selectAll += column['name'] + ', '
-		selectAll = selectAll[:-2] + " from " + table
-		in_db.cursor.execute(selectAll)
-		counter = 0
+		id_min = 0
+		id_max = 0
+		selectminmax = "SELECT min(OGR_FID), max(OGR_FID) FROM " + table
+		in_db.cursor.execute(selectminmax)
 		for row in in_db.cursor:
-			insert = "INSERT INTO " + table + " ("
-			for column in columns:
-				insert += column['name'] + ", "
-			insert = insert[:-2] + ") VALUES ("
+			id_min = row[0]
+			id_max = row[1]
+		start = id_min
+		end = id_min + chunk_size
+
+		# let's build a do while loop:
+		while True:
+			selectAll = "SELECT "
 			for column in columns:
 				if column['type'] == "geometry":
-					insert += "ST_GeomFromText(%s, 4326), "
+					selectAll += "AsText(" + column['name'] + "), "
 				else:
-					insert += "%s, "
-			insert = insert[:-2] + ")"
-			out_db.cursor.execute(insert, row)
-			counter += 1
-			if counter % 1000 == 0:
-				print counter
+					selectAll += column['name'] + ', '
+			selectAll = selectAll[:-2] + " FROM " + table + " WHERE OGR_FID >= " + str(start) + " AND OGR_FID < " + str(end)
+			in_db.cursor.execute(selectAll)
+			for row in in_db.cursor:
+				insert = "INSERT INTO " + table + " ("
+				for column in columns:
+					insert += column['name'] + ", "
+				insert = insert[:-2] + ") VALUES ("
+				for column in columns:
+					if column['type'] == "geometry":
+						insert += "ST_GeomFromText(%s, 4326), "
+					else:
+						insert += "%s, "
+				insert = insert[:-2] + ")"
+				out_db.cursor.execute(insert, row)
 				out_db.connection.commit()
+			if end > id_max:
+				break
+			print end
+			start = end
+			end += chunk_size
 
-		out_db.connection.commit()
 		print "Finished table " + table 
 
 if __name__ == "__main__":
