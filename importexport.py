@@ -1,132 +1,182 @@
 import argparse
 import sys
 import re
-from db import mysql, postgis, spatialite
+from db import mysql, postgis, spatialite, monet_db
 import decimal
 
-supported_databases = ("mysql", "postgis", "postgresql", "sqlite", "spatialite")
+supported_databases = ("mysql", "postgis", "postgresql", "sqlite", "spatialite", "monetdb")
 chunk_size = 10000
 
 def loadTableNames(tablesfile):
 	return [line.rstrip() for line in tablesfile]
 
-def importExport(source_db, destination_db, tableNames):
-	in_db = None
-	out_db = None
-	out_param = "%s"
-	spatial_column_extra = False
-
+def initSourceDb(source_db):
 	if source_db == "mysql":
-		in_db = mysql.MySQL()
+		return mysql.MySQL()
 	else:
-		print "Input database not supported"
+		print "The input database is not supported!"
 		sys.exit(2)
 
+def initDestinationDb(destination_db):
 	if destination_db == "postgis" or destination_db == "postgresql":
-		out_db = postgis.Postgis()
-		out_param = "%s"
+		db = postgis.Postgis()
+		param = "%s"
 		spatial_column_extra = False
+		buffer_insteadof_string = False
+		geomFunction = "ST_GeomFromText"
+		return db, {'param': param,
+				'spatial_column_extra': spatial_column_extra,
+				'buffer_insteadof_string': buffer_insteadof_string,
+				'geomFunction': geomFunction}
 	elif destination_db == "spatialite" or destination_db == "sqlite":
-		out_db = spatialite.Spatialite('benchmark.db')
-		out_param = "?"
+		db = spatialite.Spatialite('benchmark.db')
+		param = "?"
 		spatial_column_extra = True
+		buffer_insteadof_string = True
 		init = 'SELECT InitSpatialMetadata()'
-		out_db.cursor.execute(init)
+		db.cursor.execute(init)
+		geomFunction = "ST_GeomFromText"
+		return db, {'param': param,
+				'spatial_column_extra': spatial_column_extra,
+				'buffer_insteadof_string': buffer_insteadof_string,
+				'geomFunction': geomFunction}
+	elif destination_db == "monetdb":
+		db = monet_db.Monet_db()
+		param = "%s"
+		spatial_column_extra = False
+		buffer_insteadof_string = False
+		geomFunction = "GeomFromText"
+		return db, {'param': param,
+				'spatial_column_extra': spatial_column_extra,
+				'buffer_insteadof_string': buffer_insteadof_string,
+				'geomFunction': geomFunction}
 	else:
-		print "Output database not supported"
+		print "The output database is not supported!"
 		sys.exit(2)
 
+def retrieveColumns(db, table):
+	show_columns = "SHOW COLUMNS FROM " + table
+	db.cursor.execute(show_columns)
+	columns = []
+	for row in db.cursor:
+		columns.append({'name': row[0], 'type': row[1], 'null': row[2], 'key': row[3]})
+	return columns
 
-	for table in tableNames:
-		# List all columns and save them
-		show_columns = "SHOW COLUMNS FROM " + table
-		in_db.cursor.execute(show_columns)
-		columns = []
-		for row in in_db.cursor:
-			columns.append({'name': row[0], 'type': row[1], 'null': row[2], 'key': row[3]})
+def dropTable(db, table):
+	db.dropTable(table)
+	
 
-		# Now let's drop the old table if it exists so we are shure it's empty
-		try:
-			dropTable = "DROP TABLE " + table
-			out_db.cursor.execute(dropTable)
-			out_db.connection.commit()
-		except:
-			"table " + table + " doesn't exist"
+def createTable(db, settings, table, columns):
+	createTable = "CREATE TABLE " + table + " ("
+	for column in columns:
+		if settings['spatial_column_extra'] and column['type'] == "geometry":
+			continue
+		createTable += column['name']
+		int_pattern = re.compile("int")
+		double_pattern = re.compile("double")
+		if int_pattern.match(column['type']):
+			createTable += ' integer'
+		elif double_pattern.match(column['type']):
+			createTable += ' double'
+		else:
+			createTable += ' ' + column['type']
+		if column['key'] == 'PRI': createTable += ' ' + 'PRIMARY KEY'
+		if column['null'] == 'NO': createTable += ' ' + 'NOT NULL'
+		createTable += ', '
+	createTable = createTable[:-2] + ")"
+	# print createTable
+	db.cursor.execute(createTable)
+	db.connection.commit()
 
-		# Let's build the create table string with all columns we need
-		createTable = "CREATE TABLE " + table + " ("
-		for column in columns:
-			if spatial_column_extra and column['type'] == "geometry":
-				continue
-			createTable += column['name']
-			int_pattern = re.compile("int")
-			double_pattern = re.compile("double")
-			if int_pattern.match(column['type']):
-				createTable += ' integer'
-			elif double_pattern.match(column['type']):
-				createTable += ' decimal'
-			else:
-				createTable += ' ' + column['type']
-			if column['key'] == 'PRI': createTable += ' ' + 'PRIMARY KEY'
-			if column['null'] == 'NO': createTable += ' ' + 'NOT NULL'
-			createTable += ', '
-		createTable = createTable[:-2] + ")"
-		# print createTable
-		out_db.cursor.execute(createTable)
+def createSpatialColumn(db, settings, table):
+	try:
+		addColumn = "SELECT AddGeometryColumn (" + settings['param'] + ", 'SHAPE', 4326, 'GEOMETRY', 2)"
+		db.cursor.execute(addColumn, [str(table)])
+		db.connection.commit()
+	except:
+		print "Could not add geometry column"
 
-		# If we need to add the spatial column extra, do it here
-		if spatial_column_extra:
-			try:
-				addColumn = "SELECT AddGeometryColumn (" + out_param + ", 'SHAPE', 4326, 'GEOMETRY', 2)"
-				out_db.cursor.execute(addColumn, [str(table)])
-			except:
-				print "Could not add geometry column"
+def prepareInsertion(db, table, chunk_size):
+	id_min = 0
+	id_max = 0
+
+	selectminmax = "SELECT min(OGR_FID), max(OGR_FID) FROM " + table
+	db.cursor.execute(selectminmax)
+	for row in db.cursor:
+		id_min = row[0]
+		id_max = row[1]
+	start = id_min
+	end = id_min + chunk_size
+	return start, end, id_max
+
+def prepareSelectChunk(table, columns, start, end):
+	select = "SELECT "
+	for column in columns:
+		if column['type'] == "geometry":
+			select += "AsText(" + column['name'] + "), "
+		else:
+			select += column['name'] + ', '
+	return select[:-2] + " FROM " + table + " WHERE OGR_FID >= " + str(start) + " AND OGR_FID < " + str(end)
+
+def prepareInsertStmt(table, columns, settings):
+	insert = "INSERT INTO " + table + " ("
+	for column in columns:
+		insert += column['name'] + ", "
+	insert = insert[:-2] + ") VALUES ("
+	for column in columns:
+		if column['type'] == "geometry":
+			insert += settings['geomFunction'] + "(" + settings['param'] + ", 4326), "
+		else:
+			insert += settings['param'] + ", "
+	insert = insert[:-2] + ")"
+	return insert
+
+def prepareInsertValues(row_values, settings):
+	values = list()
+	for value in row_values:
+		# print type(value)
+		if type(value) is decimal.Decimal:
+			values.append(float(value))
+		elif settings['buffer_insteadof_string'] and type(value) is str:
+			values.append(buffer(value))
+		elif type(value) is long:
+			values.append(int(value))
+		else:
+			values.append(value)
+	return values
+
+def selectDataChunkAndInsert(in_db, out_db, table, columns, start, end, out_settings):
+	select = prepareSelectChunk(table, columns, start, end)
+	in_db.cursor.execute(select)
+
+	insert = prepareInsertStmt(table, columns, out_settings)
+	# print insert
+
+	for row in in_db.cursor:
+		values = prepareInsertValues(row, out_settings)
+		out_db.cursor.execute(insert, tuple(values))
 		out_db.connection.commit()
 
+def importExport(source_db, destination_db, tableNames):
+	in_db = initSourceDb(source_db)
+	out_db, out_settings = initDestinationDb(destination_db)
 
-		id_min = 0
-		id_max = 0
+	for table in tableNames:
+		columns = retrieveColumns(in_db, table)
 
-		selectminmax = "SELECT min(OGR_FID), max(OGR_FID) FROM " + table
-		in_db.cursor.execute(selectminmax)
-		for row in in_db.cursor:
-			id_min = row[0]
-			id_max = row[1]
-		start = id_min
-		end = id_min + chunk_size
+		dropTable(out_db, table)
+		createTable(out_db, out_settings, table, columns)
+
+		if out_settings['spatial_column_extra']:
+			createSpatialColumn(out_db, out_settings, table)
+
+		start, end, id_max = prepareInsertion(in_db, table, chunk_size)
 
 		# let's build a do while loop:
 		while True:
-			selectAll = "SELECT "
-			for column in columns:
-				if column['type'] == "geometry":
-					selectAll += "AsText(" + column['name'] + "), "
-				else:
-					selectAll += column['name'] + ', '
-			selectAll = selectAll[:-2] + " FROM " + table + " WHERE OGR_FID >= " + str(start) + " AND OGR_FID < " + str(end)
-			in_db.cursor.execute(selectAll)
-			for row in in_db.cursor:
-				insert = "INSERT INTO " + table + " ("
-				for column in columns:
-					insert += column['name'] + ", "
-				insert = insert[:-2] + ") VALUES ("
-				for column in columns:
-					if column['type'] == "geometry":
-						insert += "ST_GeomFromText(" + out_param + ", 4326), "
-					else:
-						insert += out_param + ", "
-				insert = insert[:-2] + ")"
-				# print insert
-				values = list()
-				for value in row:
-					if type(value) is decimal.Decimal:
-						values.append(float(value))
-					else:
-						values.append(value)
-				out_db.cursor.execute(insert, tuple(values))
-				out_db.connection.commit()
+			selectDataChunkAndInsert(in_db, out_db, table, columns, start, end, out_settings)
 			if end > id_max:
-			# if end > 100:			Only for debugging
+			# if end > 100:			# Only for debugging
 				break
 			print end
 			start = end
@@ -135,15 +185,20 @@ def importExport(source_db, destination_db, tableNames):
 		print "Finished table " + table
 
 if __name__ == "__main__":
+	# Create an ArgumentParser and set the arguments we would like to have:
 	parser = argparse.ArgumentParser(description='Export geometry tables from one database to another.')
 	parser.add_argument('source_db', help="The name of the database where you want to export the tables from.")
 	parser.add_argument('destination_db', help="The name of the database where you want to export the tables to.")
-	parser.add_argument('file', type=argparse.FileType('r'), help="A file that contains all table names you want to export.")
+	parser.add_argument('file', type=argparse.FileType('r'),
+						help="A file that contains all table names you want to export.")
 	args = parser.parse_args()
+
+	# Test whether the given databases are not in the list of supported databases, if so stop the program
 	if args.source_db not in supported_databases or args.destination_db not in supported_databases:
 		print "One of your databases is not supported. Try one of the following ones:"
 		for database in supported_databases:
 			print " * " + database
 		sys.exit(2)
 	tableNames = loadTableNames(args.file)
+
 	importExport(args.source_db, args.destination_db, tableNames)
