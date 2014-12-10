@@ -1,21 +1,4 @@
-import monetdb.sql
-import math
-
-class Monetdb:
-
-	def __init__(self):
-		self.db = self.connect()
-		self.cursor = self.db.cursor()
-		# self.cursor.execute('SET PROFILING = 1')
-
-	def connect(self):
-		return monetdb.sql.connect( username="monetdb",
-									password="monetdb",
-									hostname="192.168.30.92",
-									database="benchmark")
-
-	def disconnect(self):
-		self.db.close()
+class MonetdbBenchmark:
 
 	def pointString(self, point):
 		return "Point(" + str(point['x']) + " " + str(point['y']) + ")"
@@ -108,41 +91,5 @@ class Monetdb:
 				self.cursor.execute(query)
 				if n % (math.ceil(allQueries/10.0)) == 0:
 					print('\tFinished: ' + str(n * 100.0 / allQueries) + '%')
-
-		# self.cursor.execute("select id, query, avg(run) from sys.querylog_history group by id,query")
-		# self.cursor.execute("call sys.querylog_disable()")
-		# self.cursor.execute("call sys.querylog_empty()")
-		# print self.cursor.fetchall()
-				# if n % 15 == 0:
-				# 	self.cursor.execute('SHOW PROFILES')
-				# 	for row in self.cursor:
-				# 		queryObject = {}
-				# 		for x in results['queries']:
-				# 			if x['name'] == row[2]:
-				# 				queryObject = x
-				# 				break
-				# 		queryObject['times'].append(1000 * row[1])	# Time in Milliseconds
-				# if n % (math.ceil(allQueries/10.0)) == 0:
-				# 	print('\tFinished: ' + str(n * 100.0 / allQueries) + '%')
-		# if n % 15 != 0:
-		# 	self.cursor.execute('SHOW PROFILES')
-		# 	for x, row in enumerate(self.cursor):
-		# 		if n < 15 or x >= 15 - (n % 15):
-		# 			queryObject = {}
-		# 			for x in results['queries']:
-		# 				if x['name'] == row[2]:
-		# 					queryObject = x
-		# 					break
-		# 			queryObject['times'].append(1000 * row[1])		# Time in Milliseconds
-
-		# for query in results['queries']:
-		# 	avg = 0
-		# 	x = 0.0
-		# 	for val in query['times']:
-		# 		avg = avg + val
-		# 		x = x + 1
-
-		# 	avg = avg / x
-		# 	query['avg'] = avg
 
 		return results

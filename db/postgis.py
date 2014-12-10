@@ -12,3 +12,8 @@ class Postgis:
 
 	def disconnect(self):
 		self.connection.close()
+
+	def dropTable(self, table):
+		drop = "DROP TABLE IF EXISTS " + table
+		self.cursor.execute(drop)
+		self.connection.commit()

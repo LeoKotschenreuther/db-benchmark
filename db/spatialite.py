@@ -18,3 +18,8 @@ class Spatialite:
 		self.cursor.execute(init)
 		attachDB = "ATTACH DATABASE '" + diskFile + "' AS 'benchmark'"
 		self.cursor.execute(attachDB)
+
+	def dropTable(self, table):
+		drop = "DROP TABLE IF EXISTS " + table
+		self.cursor.execute(drop)
+		self.connection.commit()
