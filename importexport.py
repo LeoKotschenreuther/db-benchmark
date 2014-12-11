@@ -155,7 +155,8 @@ def selectDataChunkAndInsert(in_db, out_db, table, columns, start, end, out_sett
 	for row in in_db.cursor:
 		values = prepareInsertValues(row, out_settings)
 		out_db.cursor.execute(insert, tuple(values))
-		out_db.connection.commit()
+	
+	out_db.connection.commit()
 
 def importExport(source_db, destination_db, tableNames):
 	in_db = initSourceDb(source_db)
